@@ -1,0 +1,56 @@
+const express = require("express");
+const cors = require("cors");
+const path = require("path");
+
+const app = express();
+const PORT = process.env.PORT || 8080;
+const ALLOW_ORIGIN = process.env.ALLOW_ORIGIN || "*";
+const DEMO_MODE = process.env.DEMO_MODE === "1" || !process.env.GOOGLE_CLOUD_PROJECT;
+
+// --- Middleware ---
+app.use(cors({ origin: ALLOW_ORIGIN }));
+app.use(express.json());
+
+// 静的ファイル配信（LIFF フロントエンド）
+app.use(express.static(path.join(__dirname, "../public")));
+
+if (DEMO_MODE) {
+  // --- デモモード: Firestore不要、サンプルデータで動作 ---
+  console.log("*** DEMO MODE — using mock data (no Firestore) ***");
+  const demoRoutes = require("./routes/demo");
+  app.use(demoRoutes);
+} else {
+  // --- 本番モード: Firestore接続 ---
+  const timelineRoutes = require("./routes/timeline");
+  const medicationRoutes = require("./routes/medications");
+  const symptomRoutes = require("./routes/symptoms");
+  const profileRoutes = require("./routes/profile");
+  const summaryRoutes = require("./routes/summary");
+
+  app.use("/api/profile", profileRoutes);
+  app.use("/api/timeline", timelineRoutes);
+  app.use("/api/medications", medicationRoutes);
+  app.use("/api/symptoms", symptomRoutes);
+  app.use("/api/summary", summaryRoutes);
+
+  // 薬剤マスタ（認証不要の公開エンドポイント）
+  app.get("/api/master/medications", (_req, res) => {
+    const master = require("../data/medication-master.json");
+    res.json(master);
+  });
+
+  // ヘルスチェック
+  app.get("/health", (_req, res) => res.json({ status: "ok" }));
+}
+
+// SPA フォールバック（LIFF内の画面遷移用）
+app.get("*", (req, res) => {
+  if (req.path.startsWith("/api/")) {
+    return res.status(404).json({ error: "Not found" });
+  }
+  res.sendFile(path.join(__dirname, "../public/index.html"));
+});
+
+app.listen(PORT, () => {
+  console.log(`yorisoi-phr server listening on port ${PORT}${DEMO_MODE ? " [DEMO]" : ""}`);
+});

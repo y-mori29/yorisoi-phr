@@ -1,0 +1,261 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+  <title>症状きろく - よりそい PHR</title>
+  <link rel="stylesheet" href="/css/style.css">
+  <style>
+    /* カレンダー */
+    .cal-nav { display: flex; justify-content: space-between; align-items: center; margin-bottom: 12px; }
+    .cal-nav button { background: none; border: none; font-size: 20px; color: var(--brand-600); cursor: pointer; padding: 8px; }
+    .cal-nav-title { font-size: 16px; font-weight: 700; color: var(--gray-800); }
+    .cal-grid { display: grid; grid-template-columns: repeat(7, 1fr); gap: 2px; text-align: center; }
+    .cal-dow { font-size: 11px; color: var(--gray-400); padding: 4px 0; font-weight: 600; }
+    .cal-day {
+      aspect-ratio: 1; display: flex; flex-direction: column; align-items: center; justify-content: center;
+      border-radius: 8px; font-size: 13px; cursor: pointer; position: relative; transition: background 0.15s;
+    }
+    .cal-day:active { background: var(--gray-100); }
+    .cal-day.today { font-weight: 700; color: var(--brand-600); }
+    .cal-day.empty { cursor: default; }
+    .cal-dot {
+      width: 6px; height: 6px; border-radius: 50%; position: absolute; bottom: 4px;
+    }
+    .cal-dot-normal { background: var(--teal); }
+    .cal-dot-warning { background: #f59e0b; }
+    .cal-dot-danger { background: var(--danger); }
+
+    /* タブ */
+    .tab-bar { display: flex; border-bottom: 2px solid var(--gray-200); margin-bottom: 16px; }
+    .tab-item {
+      flex: 1; text-align: center; padding: 10px; font-size: 14px; font-weight: 600;
+      color: var(--gray-400); cursor: pointer; border-bottom: 2px solid transparent; margin-bottom: -2px;
+    }
+    .tab-item.active { color: var(--brand-600); border-bottom-color: var(--brand-600); }
+
+    /* 日別カード */
+    .log-card { display: flex; gap: 12px; align-items: center; }
+    .log-count {
+      width: 48px; height: 48px; border-radius: 50%; display: flex; align-items: center; justify-content: center;
+      font-size: 18px; font-weight: 700; flex-shrink: 0;
+    }
+    .log-count-ok { background: #d1fae5; color: #065f46; }
+    .log-count-warn { background: #fef3c7; color: #92400e; }
+    .log-count-bad { background: #fecaca; color: #991b1b; }
+    .log-info { flex: 1; }
+    .log-date-label { font-size: 13px; color: var(--gray-500); }
+    .log-tags { display: flex; gap: 6px; margin-top: 4px; flex-wrap: wrap; }
+    .log-tag { font-size: 11px; padding: 2px 6px; border-radius: 8px; background: var(--gray-100); color: var(--gray-600); }
+    .log-tag-bleeding { background: #fecaca; color: #991b1b; }
+
+    /* 統計 */
+    .stats-row { display: grid; grid-template-columns: repeat(3, 1fr); gap: 8px; margin-bottom: 16px; }
+    .stat-box {
+      background: var(--white); border-radius: var(--radius-sm); padding: 12px; text-align: center;
+      box-shadow: var(--shadow-sm);
+    }
+    .stat-value { font-size: 22px; font-weight: 700; color: var(--brand-600); }
+    .stat-label { font-size: 11px; color: var(--gray-500); margin-top: 2px; }
+  </style>
+</head>
+<body>
+  <div class="header">
+    <button class="header-back" onclick="location.href='/'">&larr;</button>
+    <h1>症状きろく</h1>
+  </div>
+
+  <div class="content">
+    <!-- 統計サマリー -->
+    <div class="stats-row" id="stats-row">
+      <div class="stat-box"><div class="stat-value" id="stat-avg">-</div><div class="stat-label">平均回数/日</div></div>
+      <div class="stat-box"><div class="stat-value" id="stat-bleed">-</div><div class="stat-label">血便日数</div></div>
+      <div class="stat-box"><div class="stat-value" id="stat-days">-</div><div class="stat-label">記録日数</div></div>
+    </div>
+
+    <!-- タブ -->
+    <div class="tab-bar">
+      <div class="tab-item active" data-tab="calendar">カレンダー</div>
+      <div class="tab-item" data-tab="list">リスト</div>
+    </div>
+
+    <!-- カレンダービュー -->
+    <div id="view-calendar">
+      <div class="cal-nav">
+        <button id="cal-prev">&larr;</button>
+        <span class="cal-nav-title" id="cal-title"></span>
+        <button id="cal-next">&rarr;</button>
+      </div>
+      <div class="cal-grid" id="cal-grid"></div>
+    </div>
+
+    <!-- リストビュー -->
+    <div id="view-list" class="hidden"></div>
+  </div>
+
+  <button class="fab" onclick="location.href='/symptom-entry.html'" title="きょうの記録">+</button>
+
+  <script src="https://static.line-scdn.net/liff/edge/2/sdk.js" defer></script>
+  <script src="/js/liff-init.js"></script>
+  <script>
+    let allLogs = [];
+    let calYear, calMonth;
+
+    // --- モックデータ（API未接続時のデモ用） ---
+    function generateMockLogs() {
+      const logs = [];
+      const today = new Date();
+      for (let i = 0; i < 30; i++) {
+        const d = new Date(today);
+        d.setDate(d.getDate() - i);
+        if (Math.random() > 0.3) { // 70%の日に記録あり
+          const bowel = Math.floor(Math.random() * 5) + 1;
+          logs.push({
+            id: d.toISOString().slice(0, 10),
+            date: d.toISOString().slice(0, 10),
+            bowelCount: bowel,
+            bristolScale: Math.floor(Math.random() * 5) + 2,
+            bleeding: Math.random() < 0.15,
+            painScore: Math.floor(Math.random() * 4),
+            memo: "",
+          });
+        }
+      }
+      return logs;
+    }
+
+    document.addEventListener("DOMContentLoaded", async () => {
+      try {
+        await initLiff();
+        allLogs = await apiGet("/api/symptoms?days=90");
+      } catch (err) {
+        console.warn("API unavailable, using mock data:", err.message);
+        allLogs = generateMockLogs();
+      }
+
+      const now = new Date();
+      calYear = now.getFullYear();
+      calMonth = now.getMonth();
+
+      renderStats();
+      renderCalendar();
+      renderList();
+      setupTabs();
+    });
+
+    // --- 統計 ---
+    function renderStats() {
+      const recent = allLogs.filter((l) => {
+        const diff = (new Date() - new Date(l.date)) / 86400000;
+        return diff <= 14;
+      });
+      document.getElementById("stat-days").textContent = recent.length;
+      if (recent.length > 0) {
+        const avg = recent.reduce((s, l) => s + l.bowelCount, 0) / recent.length;
+        document.getElementById("stat-avg").textContent = Math.round(avg * 10) / 10;
+        document.getElementById("stat-bleed").textContent = recent.filter((l) => l.bleeding).length;
+      }
+    }
+
+    // --- カレンダー ---
+    function renderCalendar() {
+      document.getElementById("cal-title").textContent = `${calYear}年${calMonth + 1}月`;
+
+      const dows = ["日", "月", "火", "水", "木", "金", "土"];
+      let html = dows.map((d) => `<div class="cal-dow">${d}</div>`).join("");
+
+      const firstDay = new Date(calYear, calMonth, 1).getDay();
+      const daysInMonth = new Date(calYear, calMonth + 1, 0).getDate();
+      const today = new Date();
+      const todayStr = today.toISOString().slice(0, 10);
+
+      // 前月の空白
+      for (let i = 0; i < firstDay; i++) {
+        html += '<div class="cal-day empty"></div>';
+      }
+
+      for (let d = 1; d <= daysInMonth; d++) {
+        const dateStr = `${calYear}-${String(calMonth + 1).padStart(2, "0")}-${String(d).padStart(2, "0")}`;
+        const log = allLogs.find((l) => l.date === dateStr);
+        const isToday = dateStr === todayStr ? " today" : "";
+
+        let dot = "";
+        if (log) {
+          const dotClass = log.bleeding ? "cal-dot-danger" : log.bowelCount >= 5 ? "cal-dot-warning" : "cal-dot-normal";
+          dot = `<div class="cal-dot ${dotClass}"></div>`;
+        }
+
+        html += `<div class="cal-day${isToday}" onclick="openEntry('${dateStr}')">${d}${dot}</div>`;
+      }
+
+      document.getElementById("cal-grid").innerHTML = html;
+    }
+
+    document.getElementById("cal-prev").addEventListener("click", () => {
+      calMonth--;
+      if (calMonth < 0) { calMonth = 11; calYear--; }
+      renderCalendar();
+    });
+
+    document.getElementById("cal-next").addEventListener("click", () => {
+      calMonth++;
+      if (calMonth > 11) { calMonth = 0; calYear++; }
+      renderCalendar();
+    });
+
+    // --- リスト ---
+    function renderList() {
+      const container = document.getElementById("view-list");
+      if (allLogs.length === 0) {
+        container.innerHTML = `
+          <div class="empty-state">
+            <div class="empty-state-icon">&#128221;</div>
+            <p class="empty-state-text">まだ記録がありません。<br>「+」ボタンから今日の症状を記録しましょう。</p>
+          </div>`;
+        return;
+      }
+
+      const sorted = [...allLogs].sort((a, b) => b.date.localeCompare(a.date));
+      let html = "";
+      sorted.forEach((log) => {
+        const countClass = log.bowelCount <= 3 ? "log-count-ok" : log.bowelCount <= 5 ? "log-count-warn" : "log-count-bad";
+        const bristolLabel = log.bristolScale ? `BS${log.bristolScale}` : "";
+        const painLabel = log.painScore != null ? `痛み${log.painScore}` : "";
+
+        html += `
+          <div class="card" onclick="openEntry('${log.date}')" style="cursor:pointer">
+            <div class="log-card">
+              <div class="log-count ${countClass}">${log.bowelCount}</div>
+              <div class="log-info">
+                <div class="log-date-label">${formatDate(log.date)}</div>
+                <div class="log-tags">
+                  ${bristolLabel ? `<span class="log-tag">${bristolLabel}</span>` : ""}
+                  ${log.bleeding ? '<span class="log-tag log-tag-bleeding">血便</span>' : ""}
+                  ${painLabel ? `<span class="log-tag">${painLabel}</span>` : ""}
+                </div>
+              </div>
+            </div>
+          </div>`;
+      });
+      container.innerHTML = html;
+    }
+
+    // --- タブ切り替え ---
+    function setupTabs() {
+      document.querySelectorAll(".tab-item").forEach((tab) => {
+        tab.addEventListener("click", () => {
+          document.querySelectorAll(".tab-item").forEach((t) => t.classList.remove("active"));
+          tab.classList.add("active");
+          const target = tab.dataset.tab;
+          document.getElementById("view-calendar").classList.toggle("hidden", target !== "calendar");
+          document.getElementById("view-list").classList.toggle("hidden", target !== "list");
+        });
+      });
+    }
+
+    function openEntry(date) {
+      location.href = `/symptom-entry.html?date=${date}`;
+    }
+  </script>
+</body>
+</html>

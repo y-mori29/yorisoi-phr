@@ -1,0 +1,84 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+  <title>よりそい PHR</title>
+  <link rel="stylesheet" href="/css/style.css">
+</head>
+<body>
+  <div class="header">
+    <h1>よりそい PHR</h1>
+  </div>
+
+  <div class="content">
+    <!-- プロフィール概要 -->
+    <div class="card" id="profile-card">
+      <p class="text-sm text-muted">読み込み中...</p>
+    </div>
+
+    <!-- メニュー -->
+    <div class="menu-grid">
+      <a href="/timeline.html" class="menu-card">
+        <div class="menu-icon">&#128197;</div>
+        <div class="menu-label">治療タイムライン</div>
+        <div class="menu-desc">治療経歴を時系列で管理</div>
+      </a>
+      <a href="/medications.html" class="menu-card">
+        <div class="menu-icon">&#128138;</div>
+        <div class="menu-label">おくすり管理</div>
+        <div class="menu-desc">処方薬と変更履歴</div>
+      </a>
+      <a href="/symptom-log.html" class="menu-card">
+        <div class="menu-icon">&#128221;</div>
+        <div class="menu-label">症状きろく</div>
+        <div class="menu-desc">毎日の体調をかんたん記録</div>
+      </a>
+      <a href="/restroom.html" class="menu-card">
+        <div class="menu-icon">&#128702;</div>
+        <div class="menu-label">トイレさがし</div>
+        <div class="menu-desc">近くのトイレをマップで表示</div>
+      </a>
+      <a href="/summary.html" class="menu-card" style="grid-column: 1 / -1;">
+        <div class="menu-icon">&#128203;</div>
+        <div class="menu-label">診察用サマリー</div>
+        <div class="menu-desc">診察時に医師に見せる画面</div>
+      </a>
+    </div>
+  </div>
+
+  <script src="https://static.line-scdn.net/liff/edge/2/sdk.js" defer></script>
+  <script src="/js/liff-init.js"></script>
+  <script>
+    document.addEventListener("DOMContentLoaded", async () => {
+      try {
+        await initLiff();
+
+        // プロフィール取得・表示
+        const profile = await apiGet("/api/profile");
+        const card = document.getElementById("profile-card");
+
+        if (profile) {
+          card.innerHTML = `
+            <div class="card-title">${profile.diagnosisName || "潰瘍性大腸炎"}</div>
+            <p class="text-sm text-muted mt-8">
+              ${profile.diagnosisDate ? "診断日: " + formatDate(profile.diagnosisDate) : "プロフィール未設定"}
+            </p>
+          `;
+        } else {
+          card.innerHTML = `
+            <div class="card-title">はじめまして</div>
+            <p class="text-sm text-muted mt-8">
+              まずは治療タイムラインから、あなたの治療歴を記録しましょう。
+            </p>
+          `;
+        }
+      } catch (err) {
+        console.error("Init error:", err);
+        document.getElementById("profile-card").innerHTML =
+          '<p class="text-sm" style="color:var(--danger)">読み込みに失敗しました</p>';
+      }
+    });
+  </script>
+</body>
+</html>

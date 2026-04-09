@@ -1,0 +1,21 @@
+rules_version = '2';
+
+// よりそい PHR Firestore セキュリティルール
+//
+// 認証方式: LINE UserID ベース（サーバーサイド認証）
+// このアプリケーションでは、すべてのFirestoreアクセスは
+// Cloud Run上のサーバーから Admin SDK 経由で行われるため、
+// クライアント直接アクセスは全面拒否する。
+//
+// Admin SDK はセキュリティルールをバイパスするため、
+// 以下のルールはクライアント SDK からの不正アクセスを防ぐ保険的措置。
+
+service cloud.firestore {
+  match /databases/{database}/documents {
+
+    // デフォルト: 全拒否
+    match /{document=**} {
+      allow read, write: if false;
+    }
+  }
+}

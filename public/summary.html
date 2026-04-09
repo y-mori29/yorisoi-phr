@@ -1,0 +1,210 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+  <title>診察用サマリー - よりそい PHR</title>
+  <link rel="stylesheet" href="/css/style.css">
+  <style>
+    .summary-header {
+      background: linear-gradient(135deg, var(--teal), var(--teal-dark));
+      color: var(--white);
+      padding: 20px;
+      border-radius: var(--radius);
+      margin-bottom: 16px;
+      text-align: center;
+    }
+    .summary-header h2 {
+      font-size: 18px;
+      margin-bottom: 4px;
+    }
+    .summary-header p {
+      font-size: 13px;
+      opacity: 0.9;
+    }
+    .summary-compact .card {
+      padding: 12px;
+      margin-bottom: 8px;
+    }
+    .summary-event-row {
+      display: flex;
+      gap: 8px;
+      align-items: baseline;
+      padding: 6px 0;
+      border-bottom: 1px solid var(--gray-100);
+      font-size: 14px;
+    }
+    .summary-event-row:last-child { border-bottom: none; }
+    .summary-event-date {
+      flex-shrink: 0;
+      font-size: 12px;
+      color: var(--gray-500);
+      width: 80px;
+    }
+    .summary-footer {
+      text-align: center;
+      padding: 16px;
+      font-size: 11px;
+      color: var(--gray-400);
+    }
+    /* 症状サマリー */
+    .symptom-stats {
+      display: grid;
+      grid-template-columns: repeat(3, 1fr);
+      gap: 8px;
+    }
+    .symptom-stat {
+      text-align: center;
+      padding: 10px 4px;
+      background: var(--gray-50);
+      border-radius: var(--radius-sm);
+    }
+    .symptom-stat-value {
+      font-size: 20px;
+      font-weight: 700;
+      color: var(--brand-600);
+    }
+    .symptom-stat-label {
+      font-size: 11px;
+      color: var(--gray-500);
+      margin-top: 2px;
+    }
+  </style>
+</head>
+<body>
+  <div class="header">
+    <button class="header-back" onclick="location.href='/'">&larr;</button>
+    <h1>診察用サマリー</h1>
+  </div>
+
+  <div class="content">
+    <div id="summary-container">
+      <div class="loading">
+        <div class="loading-spinner"></div>
+        <p class="mt-8 text-sm text-muted">読み込み中...</p>
+      </div>
+    </div>
+  </div>
+
+  <script src="https://static.line-scdn.net/liff/edge/2/sdk.js" defer></script>
+  <script src="/js/liff-init.js"></script>
+  <script>
+    document.addEventListener("DOMContentLoaded", async () => {
+      try {
+        await initLiff();
+        const data = await apiGet("/api/summary");
+        renderSummary(data);
+      } catch (err) {
+        console.error("Summary load error:", err);
+        document.getElementById("summary-container").innerHTML =
+          '<p class="text-sm" style="color:var(--danger)">読み込みに失敗しました</p>';
+      }
+    });
+
+    function renderSummary(data) {
+      const container = document.getElementById("summary-container");
+      const { profile, activeMedications, recentEvents, symptomSummary } = data;
+
+      const today = new Date();
+      const dateStr = `${today.getFullYear()}年${today.getMonth() + 1}月${today.getDate()}日`;
+
+      let html = "";
+
+      // ヘッダー
+      html += `
+        <div class="summary-header">
+          <h2>${profile?.diagnosisName || "潰瘍性大腸炎"}</h2>
+          <p>${profile?.diagnosisDate ? "診断: " + formatDate(profile.diagnosisDate) : ""}</p>
+          <p style="margin-top:4px; font-size:11px">作成日: ${dateStr}</p>
+        </div>`;
+
+      // 現在の処方薬
+      html += '<div class="summary-section">';
+      html += '<div class="summary-section-title">現在の処方薬</div>';
+
+      if (activeMedications && activeMedications.length > 0) {
+        html += '<div class="card summary-compact">';
+        activeMedications.forEach((med) => {
+          const catLabel = MED_CATEGORY_LABELS[med.category] || "";
+          html += `
+            <div class="summary-med-item">
+              <div>
+                <div class="summary-med-name">${escapeHtml(med.name)}</div>
+                <div class="text-sm text-muted">${catLabel}${med.dosageForm ? " / " + escapeHtml(med.dosageForm) : ""}</div>
+              </div>
+              <div class="summary-med-since">${formatYearMonth(med.startDate)}〜</div>
+            </div>`;
+        });
+        html += "</div>";
+      } else {
+        html += '<div class="card"><p class="text-sm text-muted">登録なし</p></div>';
+      }
+      html += "</div>";
+
+      // 直近の症状
+      html += '<div class="summary-section">';
+      html += '<div class="summary-section-title">直近14日間の症状</div>';
+      if (symptomSummary && symptomSummary.recordedDays > 0) {
+        html += `
+          <div class="card">
+            <div class="symptom-stats">
+              <div class="symptom-stat">
+                <div class="symptom-stat-value">${symptomSummary.avgBowelCount}</div>
+                <div class="symptom-stat-label">平均排便回数/日</div>
+              </div>
+              <div class="symptom-stat">
+                <div class="symptom-stat-value">${symptomSummary.bleedingDays}</div>
+                <div class="symptom-stat-label">血便日数</div>
+              </div>
+              <div class="symptom-stat">
+                <div class="symptom-stat-value">${symptomSummary.avgPainScore != null ? symptomSummary.avgPainScore : "-"}</div>
+                <div class="symptom-stat-label">平均痛みスコア</div>
+              </div>
+            </div>
+            <p class="text-sm text-muted mt-8 text-center">${symptomSummary.recordedDays}日間の記録に基づく</p>
+          </div>`;
+      } else {
+        html += '<div class="card"><p class="text-sm text-muted">記録なし</p></div>';
+      }
+      html += "</div>";
+
+      // 直近の治療歴
+      html += '<div class="summary-section">';
+      html += '<div class="summary-section-title">治療歴（直近）</div>';
+
+      if (recentEvents && recentEvents.length > 0) {
+        html += '<div class="card summary-compact">';
+        recentEvents.forEach((ev) => {
+          const catLabel = CATEGORY_LABELS[ev.category] || "";
+          html += `
+            <div class="summary-event-row">
+              <span class="summary-event-date">${formatYearMonth(ev.date)}</span>
+              <span><strong>${escapeHtml(ev.title)}</strong>
+                ${ev.detail ? '<span class="text-sm text-muted"> - ' + escapeHtml(ev.detail) + "</span>" : ""}
+              </span>
+            </div>`;
+        });
+        html += "</div>";
+      } else {
+        html += '<div class="card"><p class="text-sm text-muted">登録なし</p></div>';
+      }
+      html += "</div>";
+
+      // フッター
+      html += `
+        <div class="summary-footer">
+          よりそい PHR で作成<br>
+          本サマリーは患者本人が入力した情報に基づいています
+        </div>`;
+
+      container.innerHTML = html;
+    }
+
+    function escapeHtml(str) {
+      const d = document.createElement("div");
+      d.textContent = str;
+      return d.innerHTML;
+    }
+  </script>
+</body>
+</html>

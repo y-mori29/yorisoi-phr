@@ -1,0 +1,126 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+  <title>イベント追加 - よりそい PHR</title>
+  <link rel="stylesheet" href="/css/style.css">
+</head>
+<body>
+  <div class="header">
+    <button class="header-back" onclick="location.href='/timeline.html'">&larr;</button>
+    <h1 id="page-title">イベント追加</h1>
+  </div>
+
+  <div class="content">
+    <form id="event-form">
+      <div class="form-group">
+        <label class="form-label">日付 *</label>
+        <input type="date" class="form-input" id="event-date" required>
+      </div>
+
+      <div class="form-group">
+        <label class="form-label">カテゴリ</label>
+        <select class="form-select" id="event-category">
+          <option value="diagnosis">診断</option>
+          <option value="hospitalization">入院</option>
+          <option value="medication_change">薬の変更</option>
+          <option value="exam">検査（内視鏡など）</option>
+          <option value="treatment_change">治療方針の変更</option>
+          <option value="other" selected>その他</option>
+        </select>
+      </div>
+
+      <div class="form-group">
+        <label class="form-label">タイトル *</label>
+        <input type="text" class="form-input" id="event-title" placeholder="例: 潰瘍性大腸炎と診断" required>
+      </div>
+
+      <div class="form-group">
+        <label class="form-label">詳細メモ</label>
+        <textarea class="form-textarea" id="event-detail" placeholder="例: ○○病院 消化器内科にて確定診断"></textarea>
+      </div>
+
+      <button type="submit" class="btn btn-primary" id="submit-btn">追加する</button>
+
+      <div id="delete-section" class="hidden mt-16">
+        <button type="button" class="btn btn-danger" id="delete-btn">このイベントを削除</button>
+      </div>
+    </form>
+  </div>
+
+  <script src="https://static.line-scdn.net/liff/edge/2/sdk.js" defer></script>
+  <script src="/js/liff-init.js"></script>
+  <script>
+    const params = new URLSearchParams(location.search);
+    const eventId = params.get("id");
+    let isEditMode = !!eventId;
+
+    document.addEventListener("DOMContentLoaded", async () => {
+      try {
+        await initLiff();
+
+        if (isEditMode) {
+          document.getElementById("page-title").textContent = "イベント編集";
+          document.getElementById("submit-btn").textContent = "更新する";
+          document.getElementById("delete-section").classList.remove("hidden");
+          await loadEvent();
+        }
+      } catch (err) {
+        console.error("Init error:", err);
+      }
+    });
+
+    async function loadEvent() {
+      const events = await apiGet("/api/timeline");
+      const ev = events.find((e) => e.id === eventId);
+      if (!ev) {
+        alert("イベントが見つかりません");
+        location.href = "/timeline.html";
+        return;
+      }
+      document.getElementById("event-date").value = ev.date || "";
+      document.getElementById("event-category").value = ev.category || "other";
+      document.getElementById("event-title").value = ev.title || "";
+      document.getElementById("event-detail").value = ev.detail || "";
+    }
+
+    document.getElementById("event-form").addEventListener("submit", async (e) => {
+      e.preventDefault();
+      const btn = document.getElementById("submit-btn");
+      btn.disabled = true;
+      btn.textContent = "保存中...";
+
+      const data = {
+        date: document.getElementById("event-date").value,
+        category: document.getElementById("event-category").value,
+        title: document.getElementById("event-title").value,
+        detail: document.getElementById("event-detail").value,
+      };
+
+      try {
+        if (isEditMode) {
+          await apiPut(`/api/timeline/${eventId}`, data);
+        } else {
+          await apiPost("/api/timeline", data);
+        }
+        location.href = "/timeline.html";
+      } catch (err) {
+        alert("保存に失敗しました: " + err.message);
+        btn.disabled = false;
+        btn.textContent = isEditMode ? "更新する" : "追加する";
+      }
+    });
+
+    document.getElementById("delete-btn").addEventListener("click", async () => {
+      if (!confirm("このイベントを削除しますか？")) return;
+      try {
+        await apiDelete(`/api/timeline/${eventId}`);
+        location.href = "/timeline.html";
+      } catch (err) {
+        alert("削除に失敗しました: " + err.message);
+      }
+    });
+  </script>
+</body>
+</html>

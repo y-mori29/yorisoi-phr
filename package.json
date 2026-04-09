@@ -1,0 +1,19 @@
+{
+  "name": "yorisoi-phr",
+  "version": "0.1.0",
+  "description": "よりそい PHR - UC患者向け治療歴・薬情報管理",
+  "main": "server/index.js",
+  "scripts": {
+    "start": "node server/index.js",
+    "dev": "node --watch server/index.js"
+  },
+  "dependencies": {
+    "@google-cloud/firestore": "^7.11.0",
+    "cors": "^2.8.5",
+    "express": "^4.21.0",
+    "uuid": "^9.0.1"
+  },
+  "engines": {
+    "node": ">=18"
+  }
+}
