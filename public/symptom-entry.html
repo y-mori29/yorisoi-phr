@@ -6,7 +6,6 @@
   <title>きょうの記録 - よりそい PHR</title>
   <link rel="stylesheet" href="/css/style.css">
   <style>
-    /* カウンター */
     .counter { display: flex; align-items: center; justify-content: center; gap: 20px; margin: 12px 0; }
     .counter-btn {
       width: 52px; height: 52px; border-radius: 50%; border: 2px solid var(--brand-200);
@@ -16,116 +15,38 @@
     .counter-btn:active { background: var(--brand-50); transform: scale(0.92); }
     .counter-value { font-size: 48px; font-weight: 700; color: var(--gray-800); min-width: 60px; text-align: center; }
 
-    /* Bristol Scale ピッカー */
-    .bristol-grid { display: grid; grid-template-columns: repeat(7, 1fr); gap: 6px; }
-    .bristol-item {
+    .scale-grid { display: grid; gap: 6px; }
+    .scale-item {
       aspect-ratio: 1; border-radius: var(--radius-sm); border: 2px solid var(--gray-200);
       display: flex; flex-direction: column; align-items: center; justify-content: center;
       cursor: pointer; font-size: 12px; color: var(--gray-600); transition: all 0.15s;
     }
-    .bristol-item.selected { border-color: var(--brand-500); background: var(--brand-50); color: var(--brand-700); }
-    .bristol-item:active { transform: scale(0.92); }
-    .bristol-num { font-size: 18px; font-weight: 700; }
+    .scale-item.selected { border-color: var(--brand-500); background: var(--brand-50); color: var(--brand-700); }
+    .scale-item:active { transform: scale(0.92); }
+    .scale-num { font-size: 18px; font-weight: 700; }
 
-    /* トグル */
-    .toggle-row {
-      display: flex; align-items: center; justify-content: space-between; padding: 14px 0;
-      border-bottom: 1px solid var(--gray-100);
-    }
+    .toggle-row { display: flex; align-items: center; justify-content: space-between; padding: 14px 0; border-bottom: 1px solid var(--gray-100); }
     .toggle-label { font-size: 15px; font-weight: 600; }
-    .toggle-switch {
-      position: relative; width: 52px; height: 28px; cursor: pointer;
-    }
+    .toggle-switch { position: relative; width: 52px; height: 28px; cursor: pointer; }
     .toggle-switch input { display: none; }
-    .toggle-track {
-      width: 100%; height: 100%; border-radius: 14px; background: var(--gray-300);
-      transition: background 0.2s;
-    }
+    .toggle-track { width: 100%; height: 100%; border-radius: 14px; background: var(--gray-300); transition: background 0.2s; }
     .toggle-switch input:checked + .toggle-track { background: var(--danger); }
-    .toggle-thumb {
-      position: absolute; top: 2px; left: 2px; width: 24px; height: 24px; border-radius: 50%;
-      background: var(--white); box-shadow: var(--shadow-sm); transition: left 0.2s;
-    }
+    .toggle-thumb { position: absolute; top: 2px; left: 2px; width: 24px; height: 24px; border-radius: 50%; background: var(--white); box-shadow: var(--shadow-sm); transition: left 0.2s; }
     .toggle-switch input:checked ~ .toggle-thumb { left: 26px; }
 
-    /* 痛みスコア */
-    .pain-bar { display: flex; gap: 4px; }
-    .pain-item {
-      flex: 1; height: 44px; border-radius: var(--radius-sm); border: 2px solid var(--gray-200);
-      display: flex; align-items: center; justify-content: center; cursor: pointer;
-      font-size: 13px; font-weight: 600; color: var(--gray-500); transition: all 0.15s;
-    }
-    .pain-item.selected { border-color: var(--brand-500); background: var(--brand-50); color: var(--brand-700); }
-    .pain-item:active { transform: scale(0.92); }
-
-    /* 完了 */
-    .done-overlay {
-      position: fixed; inset: 0; background: rgba(0,0,0,0.4); display: flex; align-items: center;
-      justify-content: center; z-index: 200;
-    }
-    .done-card {
-      background: var(--white); border-radius: var(--radius); padding: 32px; text-align: center;
-      max-width: 300px; box-shadow: 0 8px 32px rgba(0,0,0,0.2);
-    }
-    .done-icon { font-size: 48px; margin-bottom: 12px; }
-    .done-text { font-size: 16px; font-weight: 600; margin-bottom: 16px; }
+    .done-overlay { position: fixed; inset: 0; background: rgba(0,0,0,0.4); display: flex; align-items: center; justify-content: center; z-index: 200; }
+    .done-card { background: var(--white); border-radius: var(--radius); padding: 32px; text-align: center; max-width: 300px; box-shadow: 0 8px 32px rgba(0,0,0,0.2); }
   </style>
 </head>
 <body>
   <div class="header">
-    <button class="header-back" onclick="location.href='/symptom-log.html'">&larr;</button>
+    <button class="header-back" onclick="location.href='/symptom-log.html?disease='+getDiseaseId()">&larr;</button>
     <h1 id="page-title">きょうの記録</h1>
   </div>
 
   <div class="content">
-    <!-- 排便回数 -->
-    <div class="card">
-      <div class="form-label" style="text-align:center; margin-bottom:4px">排便回数</div>
-      <div class="counter">
-        <button class="counter-btn" id="count-minus">&minus;</button>
-        <div class="counter-value" id="count-value">0</div>
-        <button class="counter-btn" id="count-plus">+</button>
-      </div>
-    </div>
-
-    <!-- Bristol Scale -->
-    <div class="card">
-      <div class="form-label">便の状態（ブリストルスケール）</div>
-      <p class="text-sm text-muted mb-8">1=硬い ← → 7=水様</p>
-      <div class="bristol-grid" id="bristol-grid">
-        <div class="bristol-item" data-bs="1"><div class="bristol-num">1</div>硬</div>
-        <div class="bristol-item" data-bs="2"><div class="bristol-num">2</div>塊</div>
-        <div class="bristol-item" data-bs="3"><div class="bristol-num">3</div>ひび</div>
-        <div class="bristol-item" data-bs="4"><div class="bristol-num">4</div>普通</div>
-        <div class="bristol-item" data-bs="5"><div class="bristol-num">5</div>柔</div>
-        <div class="bristol-item" data-bs="6"><div class="bristol-num">6</div>泥</div>
-        <div class="bristol-item" data-bs="7"><div class="bristol-num">7</div>水</div>
-      </div>
-    </div>
-
-    <!-- 血便・痛み -->
-    <div class="card">
-      <div class="toggle-row">
-        <span class="toggle-label">血便あり</span>
-        <label class="toggle-switch">
-          <input type="checkbox" id="bleeding-toggle">
-          <div class="toggle-track"></div>
-          <div class="toggle-thumb"></div>
-        </label>
-      </div>
-
-      <div style="padding-top:14px">
-        <div class="form-label">おなかの痛み</div>
-        <p class="text-sm text-muted mb-8">0=なし ← → 5=とても痛い</p>
-        <div class="pain-bar" id="pain-bar">
-          <div class="pain-item" data-pain="0">0</div>
-          <div class="pain-item" data-pain="1">1</div>
-          <div class="pain-item" data-pain="2">2</div>
-          <div class="pain-item" data-pain="3">3</div>
-          <div class="pain-item" data-pain="4">4</div>
-          <div class="pain-item" data-pain="5">5</div>
-        </div>
-      </div>
+    <div id="metrics-container">
+      <div class="loading"><div class="loading-spinner"></div><p class="mt-8 text-sm text-muted">読み込み中...</p></div>
     </div>
 
     <!-- メモ -->
@@ -135,18 +56,16 @@
     </div>
 
     <button class="btn btn-primary" id="save-btn">記録する</button>
-
     <div id="delete-section" class="hidden mt-16">
       <button class="btn btn-danger" id="delete-btn">この日の記録を削除</button>
     </div>
   </div>
 
-  <!-- 保存完了オーバーレイ -->
   <div class="done-overlay hidden" id="done-overlay">
     <div class="done-card">
-      <div class="done-icon">&#9989;</div>
-      <div class="done-text">記録しました</div>
-      <button class="btn btn-teal" onclick="location.href='/symptom-log.html'">閉じる</button>
+      <div style="font-size:48px; margin-bottom:12px">&#9989;</div>
+      <div style="font-size:16px; font-weight:600; margin-bottom:16px">記録しました</div>
+      <button class="btn btn-teal" onclick="location.href='/symptom-log.html?disease='+getDiseaseId()">閉じる</button>
     </div>
   </div>
 
@@ -155,117 +74,129 @@
   <script>
     const params = new URLSearchParams(location.search);
     const targetDate = params.get("date") || new Date().toISOString().slice(0, 10);
-
-    let bowelCount = 0;
-    let bristolScale = null;
-    let painScore = null;
+    let metricValues = {};
 
     document.addEventListener("DOMContentLoaded", async () => {
-      // 日付表示
-      document.getElementById("page-title").textContent = formatDate(targetDate) + " の記録";
-
       try {
-        await initLiff();
+        const { template } = await initLiff();
+        document.getElementById("page-title").textContent = formatDate(targetDate) + " の記録";
+
+        // テンプレートからメトリクスUIを動的生成
+        renderMetrics(template.symptomConfig?.metrics || []);
+
         // 既存データ読み込み
-        const existing = await apiGet(`/api/symptoms/today`);
-        if (existing && existing.date === targetDate) {
-          loadExisting(existing);
-        } else {
-          // 指定日のデータを全体から取得
+        try {
           const all = await apiGet("/api/symptoms?days=90");
           const match = all.find((l) => l.date === targetDate);
-          if (match) loadExisting(match);
-        }
-      } catch (err) {
-        console.warn("API unavailable, mock mode:", err.message);
-      }
+          if (match) loadExisting(match, template.symptomConfig?.metrics || []);
+        } catch (e) { console.warn("Load error:", e.message); }
 
-      setupControls();
+        setupSaveDelete();
+      } catch (err) {
+        console.error("Init error:", err);
+      }
     });
 
-    function loadExisting(log) {
-      bowelCount = log.bowelCount || 0;
-      bristolScale = log.bristolScale;
-      painScore = log.painScore;
-      document.getElementById("count-value").textContent = bowelCount;
-      document.getElementById("bleeding-toggle").checked = !!log.bleeding;
-      document.getElementById("memo").value = log.memo || "";
-      document.getElementById("delete-section").classList.remove("hidden");
+    function renderMetrics(metrics) {
+      const container = document.getElementById("metrics-container");
+      let html = "";
 
-      if (bristolScale != null) {
-        document.querySelector(`.bristol-item[data-bs="${bristolScale}"]`)?.classList.add("selected");
-      }
-      if (painScore != null) {
-        document.querySelector(`.pain-item[data-pain="${painScore}"]`)?.classList.add("selected");
-      }
+      metrics.forEach((m) => {
+        html += '<div class="card">';
+
+        if (m.type === "counter") {
+          metricValues[m.id] = m.default || 0;
+          html += `
+            <div class="form-label" style="text-align:center; margin-bottom:4px">${escapeHtml(m.label)}</div>
+            <div class="counter">
+              <button class="counter-btn" onclick="adjustCounter('${m.id}', -1, ${m.min || 0}, ${m.max || 99})">&minus;</button>
+              <div class="counter-value" id="val-${m.id}">${m.default || 0}</div>
+              <button class="counter-btn" onclick="adjustCounter('${m.id}', 1, ${m.min || 0}, ${m.max || 99})">+</button>
+            </div>`;
+        } else if (m.type === "scale") {
+          metricValues[m.id] = null;
+          const cols = m.max - m.min + 1;
+          html += `<div class="form-label">${escapeHtml(m.label)}</div>`;
+          if (m.description) html += `<p class="text-sm text-muted mb-8">${escapeHtml(m.description)}</p>`;
+          html += `<div class="scale-grid" style="grid-template-columns: repeat(${Math.min(cols, 7)}, 1fr);" id="scale-${m.id}">`;
+          for (let i = m.min; i <= m.max; i++) {
+            const label = m.labels ? m.labels[i - m.min] || "" : "";
+            html += `<div class="scale-item" data-metric="${m.id}" data-val="${i}" onclick="selectScale('${m.id}', ${i})"><div class="scale-num">${i}</div>${label ? `<span>${escapeHtml(label)}</span>` : ""}</div>`;
+          }
+          html += '</div>';
+        } else if (m.type === "toggle") {
+          metricValues[m.id] = false;
+          const trackColor = m.dangerColor ? "var(--danger)" : "var(--brand-500)";
+          html += `
+            <div class="toggle-row">
+              <span class="toggle-label">${escapeHtml(m.label)}</span>
+              <label class="toggle-switch">
+                <input type="checkbox" id="toggle-${m.id}" onchange="metricValues['${m.id}']=this.checked">
+                <div class="toggle-track" style="--active-color:${trackColor}"></div>
+                <div class="toggle-thumb"></div>
+              </label>
+            </div>`;
+        }
+
+        html += '</div>';
+      });
+
+      container.innerHTML = html;
+
+      // トグルのcheckedスタイル修正
+      document.querySelectorAll('.toggle-switch input').forEach((input) => {
+        const track = input.nextElementSibling;
+        const activeColor = track.style.getPropertyValue('--active-color') || 'var(--danger)';
+        input.addEventListener('change', () => { track.style.background = input.checked ? activeColor : ''; });
+      });
     }
 
-    function setupControls() {
-      // カウンター
-      document.getElementById("count-minus").addEventListener("click", () => {
-        if (bowelCount > 0) bowelCount--;
-        document.getElementById("count-value").textContent = bowelCount;
-      });
-      document.getElementById("count-plus").addEventListener("click", () => {
-        bowelCount++;
-        document.getElementById("count-value").textContent = bowelCount;
-      });
+    function adjustCounter(id, delta, min, max) {
+      metricValues[id] = Math.max(min, Math.min(max, (metricValues[id] || 0) + delta));
+      document.getElementById(`val-${id}`).textContent = metricValues[id];
+    }
 
-      // Bristol Scale
-      document.querySelectorAll(".bristol-item").forEach((el) => {
-        el.addEventListener("click", () => {
-          document.querySelectorAll(".bristol-item").forEach((e) => e.classList.remove("selected"));
-          el.classList.add("selected");
-          bristolScale = parseInt(el.dataset.bs);
-        });
+    function selectScale(id, val) {
+      metricValues[id] = val;
+      document.querySelectorAll(`[data-metric="${id}"]`).forEach((el) => {
+        el.classList.toggle("selected", parseInt(el.dataset.val) === val);
       });
+    }
 
-      // 痛みスコア
-      document.querySelectorAll(".pain-item").forEach((el) => {
-        el.addEventListener("click", () => {
-          document.querySelectorAll(".pain-item").forEach((e) => e.classList.remove("selected"));
-          el.classList.add("selected");
-          painScore = parseInt(el.dataset.pain);
-        });
-      });
-
-      // 保存
-      document.getElementById("save-btn").addEventListener("click", saveLog);
-
-      // 削除
-      document.getElementById("delete-btn").addEventListener("click", async () => {
-        if (!confirm("この日の記録を削除しますか？")) return;
-        try {
-          await apiDelete(`/api/symptoms/${targetDate}`);
-          location.href = "/symptom-log.html";
-        } catch (err) {
-          alert("削除に失敗しました");
+    function loadExisting(log, metrics) {
+      metrics.forEach((m) => {
+        if (log[m.id] != null) {
+          metricValues[m.id] = log[m.id];
+          if (m.type === "counter") {
+            document.getElementById(`val-${m.id}`).textContent = log[m.id];
+          } else if (m.type === "scale") {
+            selectScale(m.id, log[m.id]);
+          } else if (m.type === "toggle") {
+            const cb = document.getElementById(`toggle-${m.id}`);
+            if (cb) { cb.checked = !!log[m.id]; cb.dispatchEvent(new Event("change")); }
+          }
         }
       });
+      if (log.memo) document.getElementById("memo").value = log.memo;
+      document.getElementById("delete-section").classList.remove("hidden");
     }
 
-    async function saveLog() {
-      const btn = document.getElementById("save-btn");
-      btn.disabled = true;
-      btn.textContent = "保存中...";
-
-      const data = {
-        date: targetDate,
-        bowelCount,
-        bristolScale,
-        bleeding: document.getElementById("bleeding-toggle").checked,
-        painScore,
-        memo: document.getElementById("memo").value,
-      };
-
-      try {
-        await apiPost("/api/symptoms", data);
+    function setupSaveDelete() {
+      document.getElementById("save-btn").addEventListener("click", async () => {
+        const btn = document.getElementById("save-btn");
+        btn.disabled = true; btn.textContent = "保存中...";
+        const data = { date: targetDate, ...metricValues, memo: document.getElementById("memo").value };
+        try {
+          await apiPost("/api/symptoms", data);
+        } catch (e) { console.warn("Save (mock):", e.message); }
         document.getElementById("done-overlay").classList.remove("hidden");
-      } catch (err) {
-        // モックモード: 保存成功として扱う
-        console.warn("Save failed (mock mode):", err.message);
-        document.getElementById("done-overlay").classList.remove("hidden");
-      }
+      });
+
+      document.getElementById("delete-btn").addEventListener("click", async () => {
+        if (!confirm("この日の記録を削除しますか？")) return;
+        try { await apiDelete(`/api/symptoms/${targetDate}`); } catch (e) {}
+        location.href = `/symptom-log.html?disease=${getDiseaseId()}`;
+      });
     }
   </script>
 </body>

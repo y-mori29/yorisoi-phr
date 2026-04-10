@@ -1,0 +1,179 @@
+{
+  "id": "sle",
+  "name": "全身性エリテマトーデス",
+  "shortName": "SLE",
+  "description": "全身性エリテマトーデス（SLE）の治療歴・薬・症状を管理",
+  "color": "#ec4899",
+  "icon": "🩺",
+
+  "modules": [
+    {
+      "id": "timeline",
+      "label": "治療タイムライン",
+      "description": "治療経歴を時系列で管理",
+      "icon": "📅",
+      "page": "timeline.html",
+      "enabled": true,
+      "core": true
+    },
+    {
+      "id": "medications",
+      "label": "おくすり管理",
+      "description": "処方薬と変更履歴",
+      "icon": "💊",
+      "page": "medications.html",
+      "enabled": true,
+      "core": true
+    },
+    {
+      "id": "symptom-log",
+      "label": "症状きろく",
+      "description": "毎日の体調をかんたん記録",
+      "icon": "📝",
+      "page": "symptom-log.html",
+      "enabled": true
+    },
+    {
+      "id": "restroom",
+      "label": "トイレさがし",
+      "description": "近くのトイレをマップで表示",
+      "icon": "🚾",
+      "page": "restroom.html",
+      "enabled": false
+    },
+    {
+      "id": "emergency-card",
+      "label": "緊急カード",
+      "description": "救急時に見せる情報カード",
+      "icon": "🆘",
+      "page": "emergency-card.html",
+      "enabled": true,
+      "core": true
+    },
+    {
+      "id": "lab-tracker",
+      "label": "検査値きろく",
+      "description": "血液検査の推移をグラフ表示",
+      "icon": "🔬",
+      "page": "lab-tracker.html",
+      "enabled": true,
+      "core": true
+    },
+    {
+      "id": "summary",
+      "label": "診察用サマリー",
+      "description": "診察時に医師に見せる画面",
+      "icon": "📋",
+      "page": "summary.html",
+      "enabled": true,
+      "core": true,
+      "fullWidth": true
+    }
+  ],
+
+  "medicationMaster": "sle-medications.json",
+
+  "symptomConfig": {
+    "title": "症状きろく",
+    "metrics": [
+      {
+        "id": "fatigue",
+        "label": "疲労度",
+        "type": "scale",
+        "min": 0,
+        "max": 5,
+        "description": "0=なし ← → 5=動けない"
+      },
+      {
+        "id": "jointPain",
+        "label": "関節の痛み",
+        "type": "scale",
+        "min": 0,
+        "max": 5,
+        "description": "0=なし ← → 5=とても痛い"
+      },
+      {
+        "id": "rash",
+        "label": "皮疹/紅斑",
+        "type": "toggle",
+        "dangerColor": true
+      },
+      {
+        "id": "fever",
+        "label": "発熱",
+        "type": "toggle",
+        "dangerColor": true
+      },
+      {
+        "id": "hairLoss",
+        "label": "脱毛",
+        "type": "toggle"
+      },
+      {
+        "id": "mouthUlcer",
+        "label": "口内炎",
+        "type": "toggle"
+      },
+      {
+        "id": "edema",
+        "label": "むくみ",
+        "type": "scale",
+        "min": 0,
+        "max": 3,
+        "labels": ["なし", "軽度", "中等度", "高度"],
+        "description": "0=なし ← → 3=高度"
+      }
+    ],
+    "summaryMetrics": [
+      { "id": "fatigue", "label": "平均疲労度", "aggregate": "avg" },
+      { "id": "jointPain", "label": "平均関節痛", "aggregate": "avg" },
+      { "id": "rash", "label": "皮疹日数", "aggregate": "countTrue" },
+      { "id": "fever", "label": "発熱日数", "aggregate": "countTrue" },
+      { "id": "edema", "label": "平均むくみ", "aggregate": "avg" }
+    ]
+  },
+
+  "labConfig": {
+    "items": [
+      { "id": "crp", "label": "CRP", "unit": "mg/dL", "normalRange": [0, 0.3], "warnHigh": 1.0 },
+      { "id": "anti_dsdna", "label": "抗dsDNA抗体", "unit": "IU/mL", "normalRange": [0, 12], "warnHigh": 30 },
+      { "id": "c3", "label": "補体C3", "unit": "mg/dL", "normalRange": [65, 135], "warnLow": 50 },
+      { "id": "c4", "label": "補体C4", "unit": "mg/dL", "normalRange": [13, 35], "warnLow": 10 },
+      { "id": "egfr", "label": "eGFR", "unit": "mL/min/1.73m²", "normalRange": [60, 120], "warnLow": 45 },
+      { "id": "urine_protein", "label": "尿蛋白", "unit": "g/日", "normalRange": [0, 0.15], "warnHigh": 0.5 },
+      { "id": "wbc", "label": "白血球数", "unit": "/μL", "normalRange": [3500, 9000], "warnLow": 2500 },
+      { "id": "hb", "label": "Hb（ヘモグロビン）", "unit": "g/dL", "normalRange": [12, 17], "warnLow": 10 },
+      { "id": "plt", "label": "血小板数", "unit": "万/μL", "normalRange": [15, 35], "warnLow": 10 },
+      { "id": "bun", "label": "BUN（尿素窒素）", "unit": "mg/dL", "normalRange": [8, 20], "warnHigh": 25 },
+      { "id": "cre", "label": "Cre（クレアチニン）", "unit": "mg/dL", "normalRange": [0.6, 1.1], "warnHigh": 1.5 }
+    ]
+  },
+
+  "emergencyConfig": {
+    "title": "緊急情報カード",
+    "subtitle": "全身性エリテマトーデス（SLE）",
+    "fields": [
+      { "id": "diagnosisYear", "label": "診断年", "placeholder": "例: 2020年" },
+      { "id": "organInvolvement", "label": "主な臓器障害", "placeholder": "例: ループス腎炎クラスIV" },
+      { "id": "severity", "label": "現在の活動性", "placeholder": "例: 低活動性・維持療法中" }
+    ],
+    "warnings": [
+      "免疫抑制剤使用中 — 感染症リスクが高いため、発熱時は早期受診を",
+      "ステロイド服用中 — 急な中断は副腎不全の危険。自己判断で減量・中止しないこと",
+      "易感染性 — 生ワクチン禁忌。帯状疱疹・肺炎球菌等の不活化ワクチン推奨",
+      "紫外線回避 — 直射日光で疾患が悪化する可能性あり。日焼け止め・長袖着用を推奨",
+      "妊娠計画時は必ず主治医に相談 — 使用中の薬剤によっては催奇形性あり",
+      "抗リン脂質抗体陽性の場合 — 血栓リスクに注意。長時間の不動・手術時は抗凝固療法の確認を"
+    ]
+  },
+
+  "timelineCategories": [
+    { "id": "diagnosis", "label": "診断", "color": "#dbeafe" },
+    { "id": "flare", "label": "再燃", "color": "#fca5a5" },
+    { "id": "medication_change", "label": "薬変更", "color": "#d1fae5" },
+    { "id": "exam", "label": "検査", "color": "#e9d5ff" },
+    { "id": "hospitalization", "label": "入院", "color": "#fde68a" },
+    { "id": "treatment_change", "label": "治療方針変更", "color": "#ffedd5" },
+    { "id": "other", "label": "その他", "color": "#e5e5e5" }
+  ]
+}

@@ -1,0 +1,177 @@
+{
+  "id": "parkinson",
+  "name": "パーキンソン病",
+  "shortName": "PD",
+  "description": "パーキンソン病（Parkinson's Disease）の治療歴・薬・症状を管理",
+  "color": "#6366f1",
+  "icon": "🧠",
+
+  "modules": [
+    {
+      "id": "timeline",
+      "label": "治療タイムライン",
+      "description": "治療経歴を時系列で管理",
+      "icon": "📅",
+      "page": "timeline.html",
+      "enabled": true,
+      "core": true
+    },
+    {
+      "id": "medications",
+      "label": "おくすり管理",
+      "description": "処方薬と変更履歴",
+      "icon": "💊",
+      "page": "medications.html",
+      "enabled": true,
+      "core": true
+    },
+    {
+      "id": "symptom-log",
+      "label": "症状きろく",
+      "description": "毎日の体調をかんたん記録",
+      "icon": "📝",
+      "page": "symptom-log.html",
+      "enabled": true
+    },
+    {
+      "id": "restroom",
+      "label": "トイレさがし",
+      "description": "近くのトイレをマップで表示",
+      "icon": "🚾",
+      "page": "restroom.html",
+      "enabled": false
+    },
+    {
+      "id": "emergency-card",
+      "label": "緊急カード",
+      "description": "救急時に見せる情報カード",
+      "icon": "🆘",
+      "page": "emergency-card.html",
+      "enabled": true,
+      "core": true
+    },
+    {
+      "id": "lab-tracker",
+      "label": "検査値きろく",
+      "description": "血液検査の推移をグラフ表示",
+      "icon": "🔬",
+      "page": "lab-tracker.html",
+      "enabled": true,
+      "core": true
+    },
+    {
+      "id": "summary",
+      "label": "診察用サマリー",
+      "description": "診察時に医師に見せる画面",
+      "icon": "📋",
+      "page": "summary.html",
+      "enabled": true,
+      "core": true,
+      "fullWidth": true
+    }
+  ],
+
+  "medicationMaster": "pd-medications.json",
+
+  "symptomConfig": {
+    "title": "症状きろく",
+    "metrics": [
+      {
+        "id": "onTime",
+        "label": "ON時間",
+        "type": "counter",
+        "min": 0,
+        "max": 24,
+        "default": 0,
+        "unit": "時間",
+        "description": "薬が効いて動きやすい時間"
+      },
+      {
+        "id": "offTime",
+        "label": "OFF時間",
+        "type": "counter",
+        "min": 0,
+        "max": 24,
+        "default": 0,
+        "unit": "時間",
+        "description": "薬の効果が切れて動きにくい時間"
+      },
+      {
+        "id": "tremor",
+        "label": "振戦の強さ",
+        "type": "scale",
+        "min": 0,
+        "max": 4,
+        "description": "0=なし ← → 4=非常に強い"
+      },
+      {
+        "id": "freezing",
+        "label": "すくみ足",
+        "type": "toggle",
+        "dangerColor": true
+      },
+      {
+        "id": "fallCount",
+        "label": "転倒回数",
+        "type": "counter",
+        "min": 0,
+        "max": 10,
+        "default": 0,
+        "unit": "回"
+      },
+      {
+        "id": "painScore",
+        "label": "痛み",
+        "type": "scale",
+        "min": 0,
+        "max": 5,
+        "description": "0=なし ← → 5=とても痛い"
+      }
+    ],
+    "summaryMetrics": [
+      { "id": "onTime", "label": "平均ON時間/日", "aggregate": "avg" },
+      { "id": "offTime", "label": "平均OFF時間/日", "aggregate": "avg" },
+      { "id": "tremor", "label": "平均振戦スコア", "aggregate": "avg" },
+      { "id": "freezing", "label": "すくみ足日数", "aggregate": "countTrue" },
+      { "id": "fallCount", "label": "合計転倒回数", "aggregate": "sum" }
+    ]
+  },
+
+  "labConfig": {
+    "items": [
+      { "id": "tsh", "label": "TSH", "unit": "μIU/mL", "normalRange": [0.5, 5.0] },
+      { "id": "ast", "label": "AST", "unit": "U/L", "normalRange": [10, 40], "warnHigh": 80 },
+      { "id": "alt", "label": "ALT", "unit": "U/L", "normalRange": [5, 45], "warnHigh": 80 },
+      { "id": "bun", "label": "BUN", "unit": "mg/dL", "normalRange": [8, 20], "warnHigh": 30 },
+      { "id": "cre", "label": "Cre（クレアチニン）", "unit": "mg/dL", "normalRange": [0.6, 1.1], "warnHigh": 1.5 },
+      { "id": "ck", "label": "CK（クレアチンキナーゼ）", "unit": "U/L", "normalRange": [50, 230], "warnHigh": 500 }
+    ]
+  },
+
+  "emergencyConfig": {
+    "title": "緊急情報カード",
+    "subtitle": "パーキンソン病",
+    "fields": [
+      { "id": "hoehnYahr", "label": "Hoehn-Yahr重症度", "placeholder": "例: ステージ3" },
+      { "id": "onsetYear", "label": "発症年", "placeholder": "例: 2020年" },
+      { "id": "dbs", "label": "DBS（脳深部刺激療法）", "placeholder": "例: なし / あり（2023年〜）" }
+    ],
+    "warnings": [
+      "レボドパ（L-DOPA）を中断しないでください — 急な中断は悪性症候群のリスクがあります",
+      "悪性症候群の初期症状: 高熱・筋強剛・意識障害・CK上昇",
+      "抗精神病薬（ドパミン遮断薬）の投与は原則禁忌です",
+      "嚥下障害がある場合、経口投与が困難なことがあります — 経鼻・注射剤を検討してください",
+      "転倒リスクが高いため、移動時の介助・環境整備に注意してください"
+    ]
+  },
+
+  "timelineCategories": [
+    { "id": "diagnosis", "label": "診断", "color": "#dbeafe" },
+    { "id": "medication_change", "label": "薬変更", "color": "#d1fae5" },
+    { "id": "exam", "label": "検査", "color": "#e9d5ff" },
+    { "id": "treatment_change", "label": "治療方針変更", "color": "#ffedd5" },
+    { "id": "hospitalization", "label": "入院", "color": "#fde68a" },
+    { "id": "rehabilitation", "label": "リハビリ", "color": "#a7f3d0" },
+    { "id": "other", "label": "その他", "color": "#e5e5e5" }
+  ]
+}

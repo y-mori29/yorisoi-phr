@@ -1,0 +1,180 @@
+{
+  "id": "t1d",
+  "name": "1型糖尿病",
+  "shortName": "T1D",
+  "description": "1型糖尿病（Type 1 Diabetes）のインスリン治療・血糖管理・症状を管理",
+  "color": "#0ea5e9",
+  "icon": "💉",
+
+  "modules": [
+    {
+      "id": "timeline",
+      "label": "治療タイムライン",
+      "description": "治療経歴を時系列で管理",
+      "icon": "📅",
+      "page": "timeline.html",
+      "enabled": true,
+      "core": true
+    },
+    {
+      "id": "medications",
+      "label": "おくすり管理",
+      "description": "インスリン・デバイスの処方と変更履歴",
+      "icon": "💊",
+      "page": "medications.html",
+      "enabled": true,
+      "core": true
+    },
+    {
+      "id": "symptom-log",
+      "label": "症状きろく",
+      "description": "毎日の血糖コントロール状況をかんたん記録",
+      "icon": "📝",
+      "page": "symptom-log.html",
+      "enabled": true
+    },
+    {
+      "id": "restroom",
+      "label": "トイレさがし",
+      "description": "近くのトイレをマップで表示",
+      "icon": "🚾",
+      "page": "restroom.html",
+      "enabled": false
+    },
+    {
+      "id": "emergency-card",
+      "label": "緊急カード",
+      "description": "救急時に見せる情報カード",
+      "icon": "🆘",
+      "page": "emergency-card.html",
+      "enabled": true,
+      "core": true
+    },
+    {
+      "id": "lab-tracker",
+      "label": "検査値きろく",
+      "description": "血液検査の推移をグラフ表示",
+      "icon": "🔬",
+      "page": "lab-tracker.html",
+      "enabled": true,
+      "core": true
+    },
+    {
+      "id": "summary",
+      "label": "診察用サマリー",
+      "description": "診察時に医師に見せる画面",
+      "icon": "📋",
+      "page": "summary.html",
+      "enabled": true,
+      "core": true,
+      "fullWidth": true
+    }
+  ],
+
+  "medicationMaster": "t1d-medications.json",
+
+  "symptomConfig": {
+    "title": "症状きろく",
+    "metrics": [
+      {
+        "id": "hypoCount",
+        "label": "低血糖回数",
+        "type": "counter",
+        "min": 0,
+        "max": 10,
+        "default": 0,
+        "unit": "回",
+        "dangerColor": true
+      },
+      {
+        "id": "highCount",
+        "label": "高血糖回数",
+        "type": "counter",
+        "min": 0,
+        "max": 10,
+        "default": 0,
+        "unit": "回"
+      },
+      {
+        "id": "carbIntake",
+        "label": "炭水化物摂取量",
+        "type": "counter",
+        "min": 0,
+        "max": 500,
+        "default": 0,
+        "unit": "g"
+      },
+      {
+        "id": "exercise",
+        "label": "運動",
+        "type": "scale",
+        "min": 0,
+        "max": 3,
+        "labels": ["なし", "軽い", "中程度", "激しい"],
+        "description": "0=なし ← → 3=激しい"
+      },
+      {
+        "id": "siteRotation",
+        "label": "注射/ポンプ部位変更",
+        "type": "toggle"
+      },
+      {
+        "id": "fatigue",
+        "label": "疲労感",
+        "type": "scale",
+        "min": 0,
+        "max": 5,
+        "description": "0=なし ← → 5=とても強い"
+      }
+    ],
+    "summaryMetrics": [
+      { "id": "hypoCount", "label": "低血糖回数/日", "aggregate": "avg" },
+      { "id": "highCount", "label": "高血糖回数/日", "aggregate": "avg" },
+      { "id": "carbIntake", "label": "平均炭水化物量", "aggregate": "avg" },
+      { "id": "fatigue", "label": "平均疲労感", "aggregate": "avg" }
+    ]
+  },
+
+  "labConfig": {
+    "items": [
+      { "id": "hba1c", "label": "HbA1c", "unit": "%", "normalRange": [4.6, 6.2], "warnHigh": 7.0 },
+      { "id": "egfr", "label": "eGFR", "unit": "mL/min/1.73m²", "normalRange": [60, 120], "warnLow": 45 },
+      { "id": "urine_alb", "label": "尿中アルブミン", "unit": "mg/gCr", "normalRange": [0, 30], "warnHigh": 300 },
+      { "id": "tc", "label": "総コレステロール", "unit": "mg/dL", "normalRange": [130, 219] },
+      { "id": "ldl", "label": "LDLコレステロール", "unit": "mg/dL", "normalRange": [60, 139], "warnHigh": 140 },
+      { "id": "tg", "label": "中性脂肪", "unit": "mg/dL", "normalRange": [30, 149], "warnHigh": 150 },
+      { "id": "tsh", "label": "TSH", "unit": "μIU/mL", "normalRange": [0.5, 5.0], "warnLow": 0.3, "warnHigh": 10.0 },
+      { "id": "cre", "label": "クレアチニン（Cre）", "unit": "mg/dL", "normalRange": [0.6, 1.1], "warnHigh": 1.5 }
+    ]
+  },
+
+  "emergencyConfig": {
+    "title": "緊急情報カード",
+    "subtitle": "1型糖尿病",
+    "fields": [
+      { "id": "onsetAge", "label": "発症年齢", "placeholder": "例: 12歳" },
+      { "id": "insulinRegimen", "label": "インスリン療法", "placeholder": "例: MDI（頻回注射）/ CSII（ポンプ療法）" },
+      { "id": "pumpModel", "label": "インスリンポンプ機種", "placeholder": "例: Medtronic 780G（装着中の場合）" },
+      { "id": "cgmDevice", "label": "CGM/FGM機器", "placeholder": "例: Dexcom G7 / FreeStyleリブレ3" }
+    ],
+    "warnings": [
+      "意識障害・けいれん時はグルカゴン投与を検討（低血糖の可能性）",
+      "グルカゴン注射キットまたは経鼻グルカゴン（バクスミー）の所持を確認",
+      "意識がある場合はブドウ糖10〜20gを経口摂取させる",
+      "糖尿病性ケトアシドーシス（DKA）のリスクあり — 嘔吐・腹痛・過呼吸・フルーツ臭に注意",
+      "インスリンポンプ装着中の場合、ポンプの動作確認・回路閉塞の有無を確認",
+      "インスリンの中断は絶対禁止 — ポンプ離脱時は速やかにペン注射へ切替",
+      "自己判断でインスリンを中止しないよう本人・家族に確認"
+    ]
+  },
+
+  "timelineCategories": [
+    { "id": "diagnosis", "label": "診断", "color": "#dbeafe" },
+    { "id": "medication_change", "label": "薬変更", "color": "#d1fae5" },
+    { "id": "device_change", "label": "機器変更", "color": "#bae6fd" },
+    { "id": "exam", "label": "検査", "color": "#e9d5ff" },
+    { "id": "hospitalization", "label": "入院", "color": "#fde68a" },
+    { "id": "complication", "label": "合併症", "color": "#fecaca" },
+    { "id": "other", "label": "その他", "color": "#e5e5e5" }
+  ]
+}

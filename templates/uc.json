@@ -1,0 +1,151 @@
+{
+  "id": "uc",
+  "name": "潰瘍性大腸炎",
+  "shortName": "UC",
+  "description": "潰瘍性大腸炎（Ulcerative Colitis）の治療歴・薬・症状を管理",
+  "color": "#ee8b97",
+  "icon": "🩺",
+
+  "modules": [
+    {
+      "id": "timeline",
+      "label": "治療タイムライン",
+      "description": "治療経歴を時系列で管理",
+      "icon": "📅",
+      "page": "timeline.html",
+      "enabled": true,
+      "core": true
+    },
+    {
+      "id": "medications",
+      "label": "おくすり管理",
+      "description": "処方薬と変更履歴",
+      "icon": "💊",
+      "page": "medications.html",
+      "enabled": true,
+      "core": true
+    },
+    {
+      "id": "symptom-log",
+      "label": "症状きろく",
+      "description": "毎日の体調をかんたん記録",
+      "icon": "📝",
+      "page": "symptom-log.html",
+      "enabled": true
+    },
+    {
+      "id": "restroom",
+      "label": "トイレさがし",
+      "description": "近くのトイレをマップで表示",
+      "icon": "🚾",
+      "page": "restroom.html",
+      "enabled": true
+    },
+    {
+      "id": "emergency-card",
+      "label": "緊急カード",
+      "description": "救急時に見せる情報カード",
+      "icon": "🆘",
+      "page": "emergency-card.html",
+      "enabled": true,
+      "core": true
+    },
+    {
+      "id": "lab-tracker",
+      "label": "検査値きろく",
+      "description": "血液検査の推移をグラフ表示",
+      "icon": "🔬",
+      "page": "lab-tracker.html",
+      "enabled": true,
+      "core": true
+    },
+    {
+      "id": "summary",
+      "label": "診察用サマリー",
+      "description": "診察時に医師に見せる画面",
+      "icon": "📋",
+      "page": "summary.html",
+      "enabled": true,
+      "core": true,
+      "fullWidth": true
+    }
+  ],
+
+  "medicationMaster": "uc-medications.json",
+
+  "symptomConfig": {
+    "title": "症状きろく",
+    "metrics": [
+      {
+        "id": "bowelCount",
+        "label": "排便回数",
+        "type": "counter",
+        "min": 0,
+        "max": 30,
+        "default": 0,
+        "unit": "回"
+      },
+      {
+        "id": "bristolScale",
+        "label": "便の状態（ブリストルスケール）",
+        "type": "scale",
+        "min": 1,
+        "max": 7,
+        "labels": ["硬", "塊", "ひび", "普通", "柔", "泥", "水"],
+        "description": "1=硬い ← → 7=水様"
+      },
+      {
+        "id": "bleeding",
+        "label": "血便あり",
+        "type": "toggle",
+        "dangerColor": true
+      },
+      {
+        "id": "painScore",
+        "label": "おなかの痛み",
+        "type": "scale",
+        "min": 0,
+        "max": 5,
+        "description": "0=なし ← → 5=とても痛い"
+      }
+    ],
+    "summaryMetrics": [
+      { "id": "bowelCount", "label": "平均回数/日", "aggregate": "avg" },
+      { "id": "bleeding", "label": "血便日数", "aggregate": "countTrue" },
+      { "id": "painScore", "label": "平均痛み", "aggregate": "avg" }
+    ]
+  },
+
+  "labConfig": {
+    "items": [
+      { "id": "crp", "label": "CRP", "unit": "mg/dL", "normalRange": [0, 0.3], "warnHigh": 1.0 },
+      { "id": "hb", "label": "Hb（ヘモグロビン）", "unit": "g/dL", "normalRange": [12, 17], "warnLow": 10 },
+      { "id": "wbc", "label": "白血球数", "unit": "/μL", "normalRange": [3500, 9000] },
+      { "id": "alb", "label": "アルブミン", "unit": "g/dL", "normalRange": [3.8, 5.2], "warnLow": 3.0 },
+      { "id": "esr", "label": "赤沈（ESR）", "unit": "mm/h", "normalRange": [0, 15], "warnHigh": 30 },
+      { "id": "plt", "label": "血小板数", "unit": "万/μL", "normalRange": [15, 35] }
+    ]
+  },
+
+  "emergencyConfig": {
+    "title": "緊急情報カード",
+    "subtitle": "潰瘍性大腸炎",
+    "fields": [
+      { "id": "diagnosisType", "label": "病型", "placeholder": "例: 全大腸炎型" },
+      { "id": "severity", "label": "重症度", "placeholder": "例: 中等症・寛解期" }
+    ],
+    "warnings": [
+      "免疫抑制剤使用中の場合、感染症リスクに注意",
+      "ステロイド服用中の場合、急な中断は副腎不全のリスク"
+    ]
+  },
+
+  "timelineCategories": [
+    { "id": "diagnosis", "label": "診断", "color": "#dbeafe" },
+    { "id": "hospitalization", "label": "入院", "color": "#fde68a" },
+    { "id": "medication_change", "label": "薬変更", "color": "#d1fae5" },
+    { "id": "exam", "label": "検査", "color": "#e9d5ff" },
+    { "id": "treatment_change", "label": "治療方針変更", "color": "#ffedd5" },
+    { "id": "other", "label": "その他", "color": "#e5e5e5" }
+  ]
+}

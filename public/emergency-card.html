@@ -1,0 +1,96 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+  <title>緊急カード - よりそい PHR</title>
+  <link rel="stylesheet" href="/css/style.css">
+  <style>
+    .ecard { background: linear-gradient(135deg, #dc2626, #b91c1c); color: #fff; border-radius: var(--radius); padding: 20px; margin-bottom: 16px; }
+    .ecard-title { font-size: 20px; font-weight: 800; text-align: center; margin-bottom: 4px; letter-spacing: 2px; }
+    .ecard-subtitle { text-align: center; font-size: 14px; opacity: 0.9; margin-bottom: 16px; }
+    .ecard-section { background: rgba(255,255,255,0.15); border-radius: var(--radius-sm); padding: 12px; margin-bottom: 10px; }
+    .ecard-label { font-size: 11px; font-weight: 700; text-transform: uppercase; letter-spacing: 1px; opacity: 0.8; margin-bottom: 4px; }
+    .ecard-value { font-size: 16px; font-weight: 600; }
+    .ecard-meds { font-size: 14px; line-height: 1.6; }
+    .ecard-warning { background: rgba(255,255,255,0.2); border-radius: var(--radius-sm); padding: 10px 12px; font-size: 13px; margin-top: 8px; }
+    .ecard-warning-icon { margin-right: 4px; }
+    .ecard-footer { text-align: center; font-size: 11px; opacity: 0.7; margin-top: 12px; }
+    .edit-hint { text-align: center; font-size: 13px; color: var(--gray-400); margin: 16px 0; }
+  </style>
+</head>
+<body>
+  <div class="header" style="background: linear-gradient(135deg, #dc2626, #b91c1c);">
+    <button class="header-back" onclick="location.href='/?disease='+getDiseaseId()">&larr;</button>
+    <h1>緊急情報カード</h1>
+  </div>
+
+  <div class="content">
+    <div id="card-container">
+      <div class="loading"><div class="loading-spinner"></div><p class="mt-8 text-sm text-muted">読み込み中...</p></div>
+    </div>
+    <p class="edit-hint">この画面を救急隊員・医師に見せてください</p>
+  </div>
+
+  <script src="https://static.line-scdn.net/liff/edge/2/sdk.js" defer></script>
+  <script src="/js/liff-init.js"></script>
+  <script>
+    document.addEventListener("DOMContentLoaded", async () => {
+      try {
+        const { template } = await initLiff();
+        const summary = await apiGet("/api/summary");
+        renderCard(template, summary);
+      } catch (err) {
+        console.error("Load error:", err);
+        document.getElementById("card-container").innerHTML =
+          '<p class="text-sm" style="color:var(--danger)">読み込みに失敗しました</p>';
+      }
+    });
+
+    function renderCard(template, summary) {
+      const { profile, activeMedications } = summary;
+      const eConfig = template.emergencyConfig || {};
+      const container = document.getElementById("card-container");
+
+      let html = '<div class="ecard">';
+      html += `<div class="ecard-title">&#9888; 緊急情報カード</div>`;
+      html += `<div class="ecard-subtitle">${escapeHtml(eConfig.subtitle || template.name)}</div>`;
+
+      // 疾患名・診断日
+      html += `<div class="ecard-section">
+        <div class="ecard-label">疾患名</div>
+        <div class="ecard-value">${escapeHtml(profile?.diagnosisName || template.name)}</div>
+        ${profile?.diagnosisDate ? `<div style="font-size:13px; opacity:0.8; margin-top:2px">診断日: ${formatDate(profile.diagnosisDate)}</div>` : ""}
+      </div>`;
+
+      // 現在の服用薬
+      if (activeMedications && activeMedications.length > 0) {
+        html += '<div class="ecard-section"><div class="ecard-label">現在の処方薬</div><div class="ecard-meds">';
+        activeMedications.forEach((med) => {
+          html += `<div>&#128138; <strong>${escapeHtml(med.name)}</strong>${med.dosageForm ? " (" + escapeHtml(med.dosageForm) + ")" : ""}</div>`;
+        });
+        html += '</div></div>';
+      }
+
+      // 疾患固有フィールド
+      if (eConfig.fields) {
+        eConfig.fields.forEach((f) => {
+          html += `<div class="ecard-section"><div class="ecard-label">${escapeHtml(f.label)}</div><div class="ecard-value">${escapeHtml(f.placeholder)}</div></div>`;
+        });
+      }
+
+      // 注意事項
+      if (eConfig.warnings && eConfig.warnings.length > 0) {
+        eConfig.warnings.forEach((w) => {
+          html += `<div class="ecard-warning"><span class="ecard-warning-icon">&#9888;</span>${escapeHtml(w)}</div>`;
+        });
+      }
+
+      html += '<div class="ecard-footer">よりそい PHR 緊急情報カード</div>';
+      html += '</div>';
+
+      container.innerHTML = html;
+    }
+  </script>
+</body>
+</html>

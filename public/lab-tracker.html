@@ -1,0 +1,204 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+  <title>検査値きろく - よりそい PHR</title>
+  <link rel="stylesheet" href="/css/style.css">
+  <style>
+    .lab-card { padding: 12px 16px; }
+    .lab-item { display: flex; justify-content: space-between; align-items: center; padding: 10px 0; border-bottom: 1px solid var(--gray-100); }
+    .lab-item:last-child { border-bottom: none; }
+    .lab-name { font-size: 14px; font-weight: 600; }
+    .lab-unit { font-size: 12px; color: var(--gray-400); }
+    .lab-value { font-size: 18px; font-weight: 700; }
+    .lab-value-normal { color: var(--teal-dark); }
+    .lab-value-warn { color: #f59e0b; }
+    .lab-value-danger { color: var(--danger); }
+    .lab-normal-range { font-size: 11px; color: var(--gray-400); }
+    .lab-history-header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 8px; }
+    .lab-date-tabs { display: flex; gap: 6px; overflow-x: auto; margin-bottom: 12px; }
+    .lab-date-tab {
+      flex-shrink: 0; padding: 6px 12px; border-radius: 16px; font-size: 12px; font-weight: 600;
+      border: 1.5px solid var(--gray-200); background: var(--white); color: var(--gray-500);
+      cursor: pointer; white-space: nowrap;
+    }
+    .lab-date-tab.active { border-color: var(--brand-500); background: var(--brand-50); color: var(--brand-700); }
+    /* ミニグラフ */
+    .lab-sparkline { display: flex; align-items: flex-end; gap: 2px; height: 32px; }
+    .lab-spark-bar { width: 6px; border-radius: 2px; background: var(--teal); min-height: 2px; transition: height 0.3s; }
+    .lab-spark-bar.warn { background: #f59e0b; }
+    .lab-spark-bar.danger { background: var(--danger); }
+  </style>
+</head>
+<body>
+  <div class="header">
+    <button class="header-back" onclick="location.href='/?disease='+getDiseaseId()">&larr;</button>
+    <h1>検査値きろく</h1>
+  </div>
+
+  <div class="content">
+    <div id="lab-container">
+      <div class="loading"><div class="loading-spinner"></div><p class="mt-8 text-sm text-muted">読み込み中...</p></div>
+    </div>
+  </div>
+
+  <button class="fab" onclick="showAddForm()" title="検査値を追加">+</button>
+
+  <!-- 追加フォーム（モーダル） -->
+  <div class="done-overlay hidden" id="add-overlay" style="align-items:flex-end;">
+    <div style="background:var(--white); border-radius:var(--radius) var(--radius) 0 0; padding:20px; width:100%; max-width:430px; max-height:80vh; overflow-y:auto;">
+      <div class="flex-between mb-8">
+        <h2 style="font-size:17px; font-weight:700">検査値を入力</h2>
+        <button style="background:none; border:none; font-size:20px; cursor:pointer; color:var(--gray-400)" onclick="hideAddForm()">&times;</button>
+      </div>
+      <form id="lab-form">
+        <div class="form-group">
+          <label class="form-label">検査日</label>
+          <input type="date" class="form-input" id="lab-date" required>
+        </div>
+        <div id="lab-fields"></div>
+        <button type="submit" class="btn btn-primary">保存する</button>
+      </form>
+    </div>
+  </div>
+
+  <script src="https://static.line-scdn.net/liff/edge/2/sdk.js" defer></script>
+  <script src="/js/liff-init.js"></script>
+  <script>
+    let labConfig = [];
+    let labResults = [];
+
+    document.addEventListener("DOMContentLoaded", async () => {
+      try {
+        const { template } = await initLiff();
+        labConfig = template.labConfig?.items || [];
+        labResults = await apiGet("/api/labs");
+        renderLabs();
+      } catch (err) {
+        console.error("Load error:", err);
+        document.getElementById("lab-container").innerHTML =
+          '<p class="text-sm" style="color:var(--danger)">読み込みに失敗しました</p>';
+      }
+    });
+
+    function renderLabs() {
+      const container = document.getElementById("lab-container");
+      if (labResults.length === 0) {
+        container.innerHTML = `
+          <div class="empty-state">
+            <div class="empty-state-icon">&#128300;</div>
+            <p class="empty-state-text">まだ検査値が登録されていません。<br>「+」ボタンから血液検査の結果を追加しましょう。</p>
+          </div>`;
+        return;
+      }
+
+      // 日付タブ
+      let html = '<div class="lab-date-tabs">';
+      labResults.forEach((r, i) => {
+        html += `<div class="lab-date-tab${i === 0 ? " active" : ""}" onclick="selectLabDate(${i})">${formatDate(r.date)}</div>`;
+      });
+      html += '</div>';
+
+      // 値一覧
+      html += '<div id="lab-values"></div>';
+      container.innerHTML = html;
+      renderLabValues(0);
+    }
+
+    function selectLabDate(idx) {
+      document.querySelectorAll(".lab-date-tab").forEach((t, i) => t.classList.toggle("active", i === idx));
+      renderLabValues(idx);
+    }
+
+    function renderLabValues(idx) {
+      const result = labResults[idx];
+      if (!result) return;
+      const valuesEl = document.getElementById("lab-values");
+      let html = '';
+
+      labConfig.forEach((item) => {
+        const val = result.values?.[item.id];
+        if (val == null) return;
+
+        // 正常範囲判定
+        let status = "normal";
+        if (item.normalRange) {
+          if (val < item.normalRange[0]) status = item.warnLow && val < item.warnLow ? "danger" : "warn";
+          else if (val > item.normalRange[1]) status = item.warnHigh && val > item.warnHigh ? "danger" : "warn";
+        }
+
+        // スパークライン（過去データから）
+        const sparkValues = labResults.map((r) => r.values?.[item.id]).filter((v) => v != null).reverse();
+        let sparkHtml = '<div class="lab-sparkline">';
+        if (sparkValues.length > 1) {
+          const maxVal = Math.max(...sparkValues) || 1;
+          sparkValues.forEach((sv, si) => {
+            const h = Math.max(2, (sv / maxVal) * 28);
+            let barClass = "";
+            if (item.normalRange && (sv < item.normalRange[0] || sv > item.normalRange[1])) barClass = " warn";
+            if (item.warnHigh && sv > item.warnHigh) barClass = " danger";
+            if (item.warnLow && sv < item.warnLow) barClass = " danger";
+            sparkHtml += `<div class="lab-spark-bar${barClass}" style="height:${h}px"></div>`;
+          });
+        }
+        sparkHtml += '</div>';
+
+        const rangeStr = item.normalRange ? `${item.normalRange[0]}〜${item.normalRange[1]}` : "";
+
+        html += `
+          <div class="card lab-card">
+            <div class="lab-item">
+              <div>
+                <div class="lab-name">${escapeHtml(item.label)}</div>
+                <div class="lab-unit">${escapeHtml(item.unit)}${rangeStr ? ` (基準: ${rangeStr})` : ""}</div>
+              </div>
+              <div style="text-align:right">
+                <div class="lab-value lab-value-${status}">${val}</div>
+                ${sparkHtml}
+              </div>
+            </div>
+          </div>`;
+      });
+
+      valuesEl.innerHTML = html;
+    }
+
+    // --- 追加フォーム ---
+    function showAddForm() {
+      document.getElementById("lab-date").value = new Date().toISOString().slice(0, 10);
+      const fields = document.getElementById("lab-fields");
+      fields.innerHTML = labConfig.map((item) => `
+        <div class="form-group">
+          <label class="form-label">${escapeHtml(item.label)} (${escapeHtml(item.unit)})</label>
+          <input type="number" step="any" class="form-input" id="lab-val-${item.id}" placeholder="${item.normalRange ? item.normalRange.join("〜") : ""}">
+        </div>
+      `).join("");
+      document.getElementById("add-overlay").classList.remove("hidden");
+    }
+
+    function hideAddForm() {
+      document.getElementById("add-overlay").classList.add("hidden");
+    }
+
+    document.getElementById("lab-form").addEventListener("submit", async (e) => {
+      e.preventDefault();
+      const date = document.getElementById("lab-date").value;
+      const values = {};
+      labConfig.forEach((item) => {
+        const v = document.getElementById(`lab-val-${item.id}`).value;
+        if (v) values[item.id] = parseFloat(v);
+      });
+      if (Object.keys(values).length === 0) { alert("値を1つ以上入力してください"); return; }
+      try {
+        const entry = await apiPost("/api/labs", { date, values });
+        labResults.unshift(entry);
+        renderLabs();
+        hideAddForm();
+      } catch (err) {
+        alert("保存に失敗しました");
+      }
+    });
+  </script>
+</body>
+</html>

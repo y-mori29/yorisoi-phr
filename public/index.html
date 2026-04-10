@@ -5,46 +5,37 @@
   <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
   <title>よりそい PHR</title>
   <link rel="stylesheet" href="/css/style.css">
+  <style>
+    .disease-selector {
+      display: flex; gap: 8px; overflow-x: auto; padding: 8px 0; margin-bottom: 8px;
+      -webkit-overflow-scrolling: touch; scrollbar-width: none;
+    }
+    .disease-selector::-webkit-scrollbar { display: none; }
+    .disease-chip {
+      flex-shrink: 0; padding: 6px 14px; border-radius: 20px; font-size: 13px; font-weight: 600;
+      border: 2px solid var(--gray-200); background: var(--white); color: var(--gray-600);
+      cursor: pointer; white-space: nowrap; transition: all 0.15s; text-decoration: none;
+    }
+    .disease-chip.active { border-color: var(--brand-500); background: var(--brand-50); color: var(--brand-700); }
+    .disease-chip:active { transform: scale(0.95); }
+  </style>
 </head>
 <body>
-  <div class="header">
+  <div class="header" id="main-header">
     <h1>よりそい PHR</h1>
   </div>
 
   <div class="content">
+    <!-- デモモード: 疾患選択 -->
+    <div id="disease-selector" class="disease-selector"></div>
+
     <!-- プロフィール概要 -->
     <div class="card" id="profile-card">
       <p class="text-sm text-muted">読み込み中...</p>
     </div>
 
-    <!-- メニュー -->
-    <div class="menu-grid">
-      <a href="/timeline.html" class="menu-card">
-        <div class="menu-icon">&#128197;</div>
-        <div class="menu-label">治療タイムライン</div>
-        <div class="menu-desc">治療経歴を時系列で管理</div>
-      </a>
-      <a href="/medications.html" class="menu-card">
-        <div class="menu-icon">&#128138;</div>
-        <div class="menu-label">おくすり管理</div>
-        <div class="menu-desc">処方薬と変更履歴</div>
-      </a>
-      <a href="/symptom-log.html" class="menu-card">
-        <div class="menu-icon">&#128221;</div>
-        <div class="menu-label">症状きろく</div>
-        <div class="menu-desc">毎日の体調をかんたん記録</div>
-      </a>
-      <a href="/restroom.html" class="menu-card">
-        <div class="menu-icon">&#128702;</div>
-        <div class="menu-label">トイレさがし</div>
-        <div class="menu-desc">近くのトイレをマップで表示</div>
-      </a>
-      <a href="/summary.html" class="menu-card" style="grid-column: 1 / -1;">
-        <div class="menu-icon">&#128203;</div>
-        <div class="menu-label">診察用サマリー</div>
-        <div class="menu-desc">診察時に医師に見せる画面</div>
-      </a>
-    </div>
+    <!-- メニュー（テンプレートから動的生成） -->
+    <div class="menu-grid" id="menu-grid"></div>
   </div>
 
   <script src="https://static.line-scdn.net/liff/edge/2/sdk.js" defer></script>
@@ -52,33 +43,55 @@
   <script>
     document.addEventListener("DOMContentLoaded", async () => {
       try {
-        await initLiff();
+        const { template } = await initLiff();
 
-        // プロフィール取得・表示
+        // ヘッダー色をテンプレートに合わせる
+        if (template.color) {
+          document.getElementById("main-header").style.background =
+            `linear-gradient(135deg, ${template.color}, ${template.color}dd)`;
+        }
+
+        // 疾患選択チップ（デモモード用）
+        await renderDiseaseSelector();
+
+        // プロフィール表示
         const profile = await apiGet("/api/profile");
         const card = document.getElementById("profile-card");
-
         if (profile) {
           card.innerHTML = `
-            <div class="card-title">${profile.diagnosisName || "潰瘍性大腸炎"}</div>
+            <div class="card-title">${escapeHtml(profile.diagnosisName || template.name)}</div>
             <p class="text-sm text-muted mt-8">
               ${profile.diagnosisDate ? "診断日: " + formatDate(profile.diagnosisDate) : "プロフィール未設定"}
-            </p>
-          `;
+            </p>`;
         } else {
           card.innerHTML = `
             <div class="card-title">はじめまして</div>
-            <p class="text-sm text-muted mt-8">
-              まずは治療タイムラインから、あなたの治療歴を記録しましょう。
-            </p>
-          `;
+            <p class="text-sm text-muted mt-8">まずは治療タイムラインから、あなたの治療歴を記録しましょう。</p>`;
         }
+
+        // メニュー動的生成
+        renderMenuGrid("menu-grid");
+
       } catch (err) {
         console.error("Init error:", err);
         document.getElementById("profile-card").innerHTML =
           '<p class="text-sm" style="color:var(--danger)">読み込みに失敗しました</p>';
       }
     });
+
+    async function renderDiseaseSelector() {
+      try {
+        const templates = await apiGet("/api/templates");
+        if (templates.length <= 1) return; // 1疾患しかなければ非表示
+        const container = document.getElementById("disease-selector");
+        const currentId = getDiseaseId();
+        container.innerHTML = templates.map((t) =>
+          `<a href="/?disease=${t.id}" class="disease-chip${t.id === currentId ? " active" : ""}">${t.icon} ${t.shortName || t.name}</a>`
+        ).join("");
+      } catch (e) {
+        console.warn("Template list unavailable:", e.message);
+      }
+    }
   </script>
 </body>
 </html>
