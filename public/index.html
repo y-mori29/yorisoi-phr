@@ -6,29 +6,18 @@
   <title>よりそい PHR</title>
   <link rel="stylesheet" href="/css/style.css">
   <style>
-    .disease-selector {
-      display: flex; gap: 8px; overflow-x: auto; padding: 8px 0; margin-bottom: 8px;
-      -webkit-overflow-scrolling: touch; scrollbar-width: none;
+    .settings-btn {
+      background: none; border: none; color: var(--white); font-size: 20px; cursor: pointer; padding: 4px;
     }
-    .disease-selector::-webkit-scrollbar { display: none; }
-    .disease-chip {
-      flex-shrink: 0; padding: 6px 14px; border-radius: 20px; font-size: 13px; font-weight: 600;
-      border: 2px solid var(--gray-200); background: var(--white); color: var(--gray-600);
-      cursor: pointer; white-space: nowrap; transition: all 0.15s; text-decoration: none;
-    }
-    .disease-chip.active { border-color: var(--brand-500); background: var(--brand-50); color: var(--brand-700); }
-    .disease-chip:active { transform: scale(0.95); }
   </style>
 </head>
 <body>
   <div class="header" id="main-header">
-    <h1>よりそい PHR</h1>
+    <h1 id="header-title">よりそい PHR</h1>
+    <a href="/setup.html" class="settings-btn" title="設定">&#9881;</a>
   </div>
 
   <div class="content">
-    <!-- デモモード: 疾患選択 -->
-    <div id="disease-selector" class="disease-selector"></div>
-
     <!-- プロフィール概要 -->
     <div class="card" id="profile-card">
       <p class="text-sm text-muted">読み込み中...</p>
@@ -42,6 +31,12 @@
   <script src="/js/liff-init.js"></script>
   <script>
     document.addEventListener("DOMContentLoaded", async () => {
+      // 初回セットアップ未完了ならリダイレクト
+      if (!localStorage.getItem("yorisoi_setup_done") && !new URLSearchParams(location.search).get("disease")) {
+        location.href = "/setup.html";
+        return;
+      }
+
       try {
         const { template } = await initLiff();
 
@@ -50,9 +45,7 @@
           document.getElementById("main-header").style.background =
             `linear-gradient(135deg, ${template.color}, ${template.color}dd)`;
         }
-
-        // 疾患選択チップ（デモモード用）
-        await renderDiseaseSelector();
+        document.getElementById("header-title").textContent = template.name || "よりそい PHR";
 
         // プロフィール表示
         const profile = await apiGet("/api/profile");
@@ -61,16 +54,16 @@
           card.innerHTML = `
             <div class="card-title">${escapeHtml(profile.diagnosisName || template.name)}</div>
             <p class="text-sm text-muted mt-8">
-              ${profile.diagnosisDate ? "診断日: " + formatDate(profile.diagnosisDate) : "プロフィール未設定"}
+              ${profile.diagnosisDate ? "診断日: " + formatDate(profile.diagnosisDate) : ""}
             </p>`;
         } else {
           card.innerHTML = `
-            <div class="card-title">はじめまして</div>
+            <div class="card-title">${escapeHtml(template.name)}</div>
             <p class="text-sm text-muted mt-8">まずは治療タイムラインから、あなたの治療歴を記録しましょう。</p>`;
         }
 
-        // メニュー動的生成
-        renderMenuGrid("menu-grid");
+        // メニュー動的生成（ユーザーが選んだモジュールのみ表示）
+        renderMenuGridFiltered("menu-grid");
 
       } catch (err) {
         console.error("Init error:", err);
@@ -79,18 +72,27 @@
       }
     });
 
-    async function renderDiseaseSelector() {
-      try {
-        const templates = await apiGet("/api/templates");
-        if (templates.length <= 1) return; // 1疾患しかなければ非表示
-        const container = document.getElementById("disease-selector");
-        const currentId = getDiseaseId();
-        container.innerHTML = templates.map((t) =>
-          `<a href="/?disease=${t.id}" class="disease-chip${t.id === currentId ? " active" : ""}">${t.icon} ${t.shortName || t.name}</a>`
-        ).join("");
-      } catch (e) {
-        console.warn("Template list unavailable:", e.message);
-      }
+    function renderMenuGridFiltered(containerId) {
+      if (!_template || !_template.modules) return;
+      const container = document.getElementById(containerId);
+      const savedModules = JSON.parse(localStorage.getItem("yorisoi_modules") || "{}");
+      const enabledModules = _template.modules.filter((m) => {
+        if (m.core) return true;
+        if (Object.keys(savedModules).length > 0) return savedModules[m.id];
+        return m.enabled;
+      });
+
+      let html = "";
+      enabledModules.forEach((mod) => {
+        const fullWidth = mod.fullWidth ? ' style="grid-column: 1 / -1;"' : "";
+        html += `
+          <a href="/${mod.page}" class="menu-card"${fullWidth}>
+            <div class="menu-icon">${mod.icon}</div>
+            <div class="menu-label">${escapeHtml(mod.label)}</div>
+            <div class="menu-desc">${escapeHtml(mod.description)}</div>
+          </a>`;
+      });
+      container.innerHTML = html;
     }
   </script>
 </body>

@@ -6,37 +6,21 @@
   <title>おくすり管理 - よりそい PHR</title>
   <link rel="stylesheet" href="/css/style.css">
   <style>
-    .med-status {
-      display: inline-block;
-      width: 8px;
-      height: 8px;
-      border-radius: 50%;
-      margin-right: 6px;
-    }
+    .med-status { display: inline-block; width: 8px; height: 8px; border-radius: 50%; margin-right: 6px; }
     .med-status-active { background: #22c55e; }
     .med-status-inactive { background: var(--gray-300); }
-    .section-title {
-      font-size: 13px;
-      font-weight: 700;
-      color: var(--gray-500);
-      text-transform: uppercase;
-      letter-spacing: 0.5px;
-      margin: 20px 0 8px;
-    }
+    .section-title { font-size: 13px; font-weight: 700; color: var(--gray-500); text-transform: uppercase; letter-spacing: 0.5px; margin: 20px 0 8px; }
   </style>
 </head>
 <body>
-  <div class="header">
+  <div class="header" id="page-header">
     <button class="header-back" onclick="location.href='/'">&larr;</button>
     <h1>おくすり管理</h1>
   </div>
 
   <div class="content">
     <div id="meds-container">
-      <div class="loading">
-        <div class="loading-spinner"></div>
-        <p class="mt-8 text-sm text-muted">読み込み中...</p>
-      </div>
+      <div class="loading"><div class="loading-spinner"></div><p class="mt-8 text-sm text-muted">読み込み中...</p></div>
     </div>
   </div>
 
@@ -45,78 +29,50 @@
   <script src="https://static.line-scdn.net/liff/edge/2/sdk.js" defer></script>
   <script src="/js/liff-init.js"></script>
   <script>
+    let medCatLabels = {};
+
     document.addEventListener("DOMContentLoaded", async () => {
       try {
-        await initLiff();
+        const { template } = await initLiff();
+        if (template.color) document.getElementById("page-header").style.background = `linear-gradient(135deg, ${template.color}, ${template.color}dd)`;
+        medCatLabels = await getMedCategoryLabels();
+
         const meds = await apiGet("/api/medications");
         renderMedications(meds);
       } catch (err) {
         console.error("Meds load error:", err);
-        document.getElementById("meds-container").innerHTML =
-          '<p class="text-sm" style="color:var(--danger)">読み込みに失敗しました</p>';
+        document.getElementById("meds-container").innerHTML = '<p class="text-sm" style="color:var(--danger)">読み込みに失敗しました</p>';
       }
     });
 
     function renderMedications(meds) {
       const container = document.getElementById("meds-container");
-
       if (!meds || meds.length === 0) {
-        container.innerHTML = `
-          <div class="empty-state">
-            <div class="empty-state-icon">&#128138;</div>
-            <p class="empty-state-text">
-              まだおくすりが登録されていません。<br>
-              「+」ボタンから処方薬を追加しましょう。
-            </p>
-          </div>`;
+        container.innerHTML = '<div class="empty-state"><div class="empty-state-icon">&#128138;</div><p class="empty-state-text">まだおくすりが登録されていません。<br>「+」ボタンから処方薬を追加しましょう。</p></div>';
         return;
       }
-
       const active = meds.filter((m) => m.isActive);
       const past = meds.filter((m) => !m.isActive);
-
       let html = "";
-
-      if (active.length > 0) {
-        html += '<div class="section-title">現在服用中</div>';
-        html += active.map(medCard).join("");
-      }
-
-      if (past.length > 0) {
-        html += '<div class="section-title">過去の処方</div>';
-        html += past.map(medCard).join("");
-      }
-
+      if (active.length > 0) { html += '<div class="section-title">現在服用中</div>'; html += active.map(medCard).join(""); }
+      if (past.length > 0) { html += '<div class="section-title">過去の処方</div>'; html += past.map(medCard).join(""); }
       container.innerHTML = html;
     }
 
     function medCard(med) {
       const statusClass = med.isActive ? "med-status-active" : "med-status-inactive";
-      const catLabel = MED_CATEGORY_LABELS[med.category] || med.category;
-      const badgeClass = `badge badge-${med.category}`;
-      const period = med.isActive
-        ? `${formatDate(med.startDate)} 〜 現在`
-        : `${formatDate(med.startDate)} 〜 ${formatDate(med.endDate)}`;
-
+      const catLabel = medCatLabels[med.category] || MED_CATEGORY_LABELS[med.category] || med.category;
+      const period = med.isActive ? `${formatDate(med.startDate)} 〜 現在` : `${formatDate(med.startDate)} 〜 ${formatDate(med.endDate)}`;
       return `
         <div class="card" onclick="location.href='/medication-edit.html?id=${med.id}'" style="cursor:pointer">
           <div class="flex-between">
-            <div>
-              <span class="med-status ${statusClass}"></span>
-              <span class="card-title">${escapeHtml(med.name)}</span>
-            </div>
-            <span class="${badgeClass}">${catLabel}</span>
+            <div><span class="med-status ${statusClass}"></span><span class="card-title">${escapeHtml(med.name)}</span></div>
+            <span class="badge">${catLabel}</span>
           </div>
           ${med.genericName ? `<div class="text-sm text-muted mt-8">${escapeHtml(med.genericName)}</div>` : ""}
           <div class="text-sm text-muted mt-8">${period}</div>
           ${med.changeReason ? `<div class="card-detail mt-8">変更理由: ${escapeHtml(med.changeReason)}</div>` : ""}
         </div>`;
-    }
-
-    function escapeHtml(str) {
-      const d = document.createElement("div");
-      d.textContent = str;
-      return d.innerHTML;
     }
   </script>
 </body>

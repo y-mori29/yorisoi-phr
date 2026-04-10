@@ -6,55 +6,22 @@
   <title>治療タイムライン - よりそい PHR</title>
   <link rel="stylesheet" href="/css/style.css">
   <style>
-    .timeline-line {
-      position: relative;
-      padding-left: 24px;
-    }
-    .timeline-line::before {
-      content: "";
-      position: absolute;
-      left: 7px;
-      top: 0;
-      bottom: 0;
-      width: 2px;
-      background: var(--brand-200);
-    }
-    .timeline-item {
-      position: relative;
-      margin-bottom: 16px;
-    }
-    .timeline-dot {
-      position: absolute;
-      left: -24px;
-      top: 18px;
-      width: 16px;
-      height: 16px;
-      border-radius: 50%;
-      background: var(--brand-500);
-      border: 3px solid var(--white);
-      box-shadow: var(--shadow-sm);
-    }
-    .year-divider {
-      font-size: 14px;
-      font-weight: 700;
-      color: var(--brand-600);
-      padding: 8px 0;
-      margin-top: 8px;
-    }
+    .timeline-line { position: relative; padding-left: 24px; }
+    .timeline-line::before { content: ""; position: absolute; left: 7px; top: 0; bottom: 0; width: 2px; background: var(--brand-200); }
+    .timeline-item { position: relative; margin-bottom: 16px; }
+    .timeline-dot { position: absolute; left: -24px; top: 18px; width: 16px; height: 16px; border-radius: 50%; background: var(--brand-500); border: 3px solid var(--white); box-shadow: var(--shadow-sm); }
+    .year-divider { font-size: 14px; font-weight: 700; color: var(--brand-600); padding: 8px 0; margin-top: 8px; }
   </style>
 </head>
 <body>
-  <div class="header">
+  <div class="header" id="page-header">
     <button class="header-back" onclick="location.href='/'">&larr;</button>
     <h1>治療タイムライン</h1>
   </div>
 
   <div class="content">
     <div id="timeline-container">
-      <div class="loading">
-        <div class="loading-spinner"></div>
-        <p class="mt-8 text-sm text-muted">読み込み中...</p>
-      </div>
+      <div class="loading"><div class="loading-spinner"></div><p class="mt-8 text-sm text-muted">読み込み中...</p></div>
     </div>
   </div>
 
@@ -63,45 +30,36 @@
   <script src="https://static.line-scdn.net/liff/edge/2/sdk.js" defer></script>
   <script src="/js/liff-init.js"></script>
   <script>
+    let categoryLabels = {};
+
     document.addEventListener("DOMContentLoaded", async () => {
       try {
-        await initLiff();
+        const { template } = await initLiff();
+        if (template.color) document.getElementById("page-header").style.background = `linear-gradient(135deg, ${template.color}, ${template.color}dd)`;
+        categoryLabels = getCategoryLabels();
+
         const events = await apiGet("/api/timeline");
         renderTimeline(events);
       } catch (err) {
         console.error("Timeline load error:", err);
-        document.getElementById("timeline-container").innerHTML =
-          '<p class="text-sm" style="color:var(--danger)">読み込みに失敗しました</p>';
+        document.getElementById("timeline-container").innerHTML = '<p class="text-sm" style="color:var(--danger)">読み込みに失敗しました</p>';
       }
     });
 
     function renderTimeline(events) {
       const container = document.getElementById("timeline-container");
-
       if (!events || events.length === 0) {
-        container.innerHTML = `
-          <div class="empty-state">
-            <div class="empty-state-icon">&#128197;</div>
-            <p class="empty-state-text">
-              まだイベントがありません。<br>
-              「+」ボタンから治療歴を記録しましょう。
-            </p>
-          </div>`;
+        container.innerHTML = '<div class="empty-state"><div class="empty-state-icon">&#128197;</div><p class="empty-state-text">まだイベントがありません。<br>「+」ボタンから治療歴を記録しましょう。</p></div>';
         return;
       }
 
-      // 年ごとにグループ化
       let html = '<div class="timeline-line">';
       let currentYear = null;
 
       events.forEach((ev) => {
         const year = ev.date ? ev.date.substring(0, 4) : "不明";
-        if (year !== currentYear) {
-          currentYear = year;
-          html += `<div class="year-divider">${year}年</div>`;
-        }
-
-        const categoryLabel = CATEGORY_LABELS[ev.category] || ev.category;
+        if (year !== currentYear) { currentYear = year; html += `<div class="year-divider">${year}年</div>`; }
+        const catLabel = categoryLabels[ev.category] || CATEGORY_LABELS[ev.category] || ev.category;
         const badgeClass = `badge badge-${ev.category}`;
 
         html += `
@@ -110,7 +68,7 @@
             <div class="card" onclick="location.href='/timeline-edit.html?id=${ev.id}'" style="cursor:pointer">
               <div class="flex-between">
                 <span class="card-date">${formatDate(ev.date)}</span>
-                <span class="${badgeClass}">${categoryLabel}</span>
+                <span class="${badgeClass}">${catLabel}</span>
               </div>
               <div class="card-title mt-8">${escapeHtml(ev.title)}</div>
               ${ev.detail ? `<div class="card-detail">${escapeHtml(ev.detail)}</div>` : ""}
@@ -120,12 +78,6 @@
 
       html += "</div>";
       container.innerHTML = html;
-    }
-
-    function escapeHtml(str) {
-      const d = document.createElement("div");
-      d.textContent = str;
-      return d.innerHTML;
     }
   </script>
 </body>

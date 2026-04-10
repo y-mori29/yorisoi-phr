@@ -6,105 +6,39 @@
   <title>おくすり追加 - よりそい PHR</title>
   <link rel="stylesheet" href="/css/style.css">
   <style>
-    .master-list {
-      max-height: 200px;
-      overflow-y: auto;
-      border: 1.5px solid var(--gray-200);
-      border-radius: var(--radius-sm);
-      background: var(--white);
-      margin-top: 4px;
-    }
-    .master-item {
-      padding: 10px 12px;
-      border-bottom: 1px solid var(--gray-100);
-      cursor: pointer;
-      font-size: 14px;
-    }
+    .master-list { max-height: 200px; overflow-y: auto; border: 1.5px solid var(--gray-200); border-radius: var(--radius-sm); background: var(--white); margin-top: 4px; }
+    .master-item { padding: 10px 12px; border-bottom: 1px solid var(--gray-100); cursor: pointer; font-size: 14px; }
     .master-item:active { background: var(--brand-50); }
     .master-item-name { font-weight: 600; }
     .master-item-generic { font-size: 12px; color: var(--gray-500); }
-    .master-category-header {
-      padding: 6px 12px;
-      background: var(--gray-100);
-      font-size: 12px;
-      font-weight: 700;
-      color: var(--gray-600);
-      position: sticky;
-      top: 0;
-    }
+    .master-category-header { padding: 6px 12px; background: var(--gray-100); font-size: 12px; font-weight: 700; color: var(--gray-600); position: sticky; top: 0; }
   </style>
 </head>
 <body>
-  <div class="header">
+  <div class="header" id="page-header">
     <button class="header-back" onclick="location.href='/medications.html'">&larr;</button>
     <h1 id="page-title">おくすり追加</h1>
   </div>
 
   <div class="content">
-    <!-- 薬剤マスタ選択 -->
     <div id="master-section">
       <div class="form-group">
         <label class="form-label">おくすりを選ぶ</label>
-        <input type="text" class="form-input" id="med-search"
-               placeholder="薬名で検索（例: ペンタサ）">
+        <input type="text" class="form-input" id="med-search" placeholder="薬名で検索">
         <div class="master-list hidden" id="master-list"></div>
       </div>
     </div>
-
-    <!-- 入力フォーム -->
     <form id="med-form">
-      <div class="form-group">
-        <label class="form-label">薬名 *</label>
-        <input type="text" class="form-input" id="med-name" placeholder="例: ペンタサ" required>
-      </div>
-
-      <div class="form-group">
-        <label class="form-label">一般名</label>
-        <input type="text" class="form-input" id="med-generic" placeholder="例: メサラジン">
-      </div>
-
-      <div class="form-group">
-        <label class="form-label">カテゴリ</label>
-        <select class="form-select" id="med-category">
-          <option value="5-ASA">5-ASA製剤</option>
-          <option value="steroid">ステロイド</option>
-          <option value="immunomodulator">免疫調節薬</option>
-          <option value="biologic">生物学的製剤</option>
-          <option value="jak_inhibitor">JAK阻害薬</option>
-          <option value="other" selected>その他</option>
-        </select>
-      </div>
-
-      <div class="form-group">
-        <label class="form-label">剤形</label>
-        <input type="text" class="form-input" id="med-form-type" placeholder="例: 経口、注射">
-      </div>
-
-      <div class="form-group">
-        <label class="form-label">開始日 *</label>
-        <input type="date" class="form-input" id="med-start" required>
-      </div>
-
-      <div class="form-group">
-        <label class="form-label">終了日（服用中なら空欄）</label>
-        <input type="date" class="form-input" id="med-end">
-      </div>
-
-      <div class="form-group">
-        <label class="form-label">変更理由</label>
-        <input type="text" class="form-input" id="med-reason" placeholder="例: 初回処方、効果不十分のため変更">
-      </div>
-
-      <div class="form-group">
-        <label class="form-label">メモ（副作用・服用時の注意など）</label>
-        <textarea class="form-textarea" id="med-notes" placeholder="例: 食後に服用。胃のむかつきに注意"></textarea>
-      </div>
-
+      <div class="form-group"><label class="form-label">薬名 *</label><input type="text" class="form-input" id="med-name" required></div>
+      <div class="form-group"><label class="form-label">一般名</label><input type="text" class="form-input" id="med-generic"></div>
+      <div class="form-group"><label class="form-label">カテゴリ</label><select class="form-select" id="med-category"></select></div>
+      <div class="form-group"><label class="form-label">剤形</label><input type="text" class="form-input" id="med-form-type"></div>
+      <div class="form-group"><label class="form-label">開始日 *</label><input type="date" class="form-input" id="med-start" required></div>
+      <div class="form-group"><label class="form-label">終了日（服用中なら空欄）</label><input type="date" class="form-input" id="med-end"></div>
+      <div class="form-group"><label class="form-label">変更理由</label><input type="text" class="form-input" id="med-reason"></div>
+      <div class="form-group"><label class="form-label">メモ</label><textarea class="form-textarea" id="med-notes"></textarea></div>
       <button type="submit" class="btn btn-primary" id="submit-btn">追加する</button>
-
-      <div id="delete-section" class="hidden mt-16">
-        <button type="button" class="btn btn-danger" id="delete-btn">このおくすりを削除</button>
-      </div>
+      <div id="delete-section" class="hidden mt-16"><button type="button" class="btn btn-danger" id="delete-btn">このおくすりを削除</button></div>
     </form>
   </div>
 
@@ -113,15 +47,24 @@
   <script>
     const params = new URLSearchParams(location.search);
     const medId = params.get("id");
-    let isEditMode = !!medId;
+    const isEditMode = !!medId;
     let masterData = null;
 
     document.addEventListener("DOMContentLoaded", async () => {
       try {
-        await initLiff();
+        const { template } = await initLiff();
+        if (template.color) document.getElementById("page-header").style.background = `linear-gradient(135deg, ${template.color}, ${template.color}dd)`;
 
-        // 薬剤マスタ読み込み
         masterData = await apiGet("/api/master/medications");
+
+        // カテゴリ選択肢を薬剤マスタから生成
+        const catSelect = document.getElementById("med-category");
+        (masterData.categories || []).forEach((c) => {
+          const opt = document.createElement("option");
+          opt.value = c.id; opt.textContent = c.name;
+          catSelect.appendChild(opt);
+        });
+
         setupMasterSearch();
 
         if (isEditMode) {
@@ -131,70 +74,40 @@
           document.getElementById("master-section").classList.add("hidden");
           await loadMedication();
         }
-      } catch (err) {
-        console.error("Init error:", err);
-      }
+      } catch (err) { console.error("Init error:", err); }
     });
 
     function setupMasterSearch() {
       const searchInput = document.getElementById("med-search");
       const listEl = document.getElementById("master-list");
-
-      searchInput.addEventListener("focus", () => {
-        renderMasterList("");
-        listEl.classList.remove("hidden");
-      });
-
-      searchInput.addEventListener("input", (e) => {
-        renderMasterList(e.target.value);
-      });
-
-      // フォーカスが外れたら少し遅れて閉じる（タップを受け取るため）
-      searchInput.addEventListener("blur", () => {
-        setTimeout(() => listEl.classList.add("hidden"), 200);
-      });
+      searchInput.addEventListener("focus", () => { renderMasterList(""); listEl.classList.remove("hidden"); });
+      searchInput.addEventListener("input", (e) => renderMasterList(e.target.value));
+      searchInput.addEventListener("blur", () => setTimeout(() => listEl.classList.add("hidden"), 200));
     }
 
     function renderMasterList(query) {
       const listEl = document.getElementById("master-list");
       if (!masterData) return;
-
       const q = query.toLowerCase();
       let html = "";
-
       masterData.categories.forEach((cat) => {
         const medsInCat = masterData.medications.filter((m) => {
           if (m.category !== cat.id) return false;
           if (!q) return true;
-          return (
-            m.genericName.toLowerCase().includes(q) ||
-            m.brandNames.some((b) => b.toLowerCase().includes(q))
-          );
+          return m.genericName.toLowerCase().includes(q) || m.brandNames.some((b) => b.toLowerCase().includes(q));
         });
-
         if (medsInCat.length === 0) return;
-
         html += `<div class="master-category-header">${cat.name}</div>`;
         medsInCat.forEach((m) => {
           m.brandNames.forEach((brand) => {
             if (q && !brand.toLowerCase().includes(q) && !m.genericName.toLowerCase().includes(q)) return;
-            html += `
-              <div class="master-item" data-brand="${brand}" data-generic="${m.genericName}"
-                   data-category="${m.category}" data-form="${m.dosageForms.join("、")}">
-                <div class="master-item-name">${brand}</div>
-                <div class="master-item-generic">${m.genericName} / ${m.dosageForms.join("、")}</div>
-              </div>`;
+            html += `<div class="master-item" data-brand="${brand}" data-generic="${m.genericName}" data-category="${m.category}" data-form="${m.dosageForms.join("、")}">
+              <div class="master-item-name">${brand}</div><div class="master-item-generic">${m.genericName} / ${m.dosageForms.join("、")}</div></div>`;
           });
         });
       });
-
-      if (!html) {
-        html = '<div class="master-item text-muted">見つかりません。手動で入力してください。</div>';
-      }
-
+      if (!html) html = '<div class="master-item text-muted">見つかりません</div>';
       listEl.innerHTML = html;
-
-      // 選択時にフォームに反映
       listEl.querySelectorAll(".master-item[data-brand]").forEach((el) => {
         el.addEventListener("mousedown", (e) => {
           e.preventDefault();
@@ -211,14 +124,10 @@
     async function loadMedication() {
       const meds = await apiGet("/api/medications");
       const med = meds.find((m) => m.id === medId);
-      if (!med) {
-        alert("おくすりが見つかりません");
-        location.href = "/medications.html";
-        return;
-      }
+      if (!med) { alert("おくすりが見つかりません"); location.href = "/medications.html"; return; }
       document.getElementById("med-name").value = med.name || "";
       document.getElementById("med-generic").value = med.genericName || "";
-      document.getElementById("med-category").value = med.category || "other";
+      document.getElementById("med-category").value = med.category || "";
       document.getElementById("med-form-type").value = med.dosageForm || "";
       document.getElementById("med-start").value = med.startDate || "";
       document.getElementById("med-end").value = med.endDate || "";
@@ -229,42 +138,22 @@
     document.getElementById("med-form").addEventListener("submit", async (e) => {
       e.preventDefault();
       const btn = document.getElementById("submit-btn");
-      btn.disabled = true;
-      btn.textContent = "保存中...";
-
+      btn.disabled = true; btn.textContent = "保存中...";
       const data = {
-        name: document.getElementById("med-name").value,
-        genericName: document.getElementById("med-generic").value,
-        category: document.getElementById("med-category").value,
-        dosageForm: document.getElementById("med-form-type").value,
-        startDate: document.getElementById("med-start").value,
-        endDate: document.getElementById("med-end").value || null,
-        changeReason: document.getElementById("med-reason").value,
-        sideNotes: document.getElementById("med-notes").value,
+        name: document.getElementById("med-name").value, genericName: document.getElementById("med-generic").value,
+        category: document.getElementById("med-category").value, dosageForm: document.getElementById("med-form-type").value,
+        startDate: document.getElementById("med-start").value, endDate: document.getElementById("med-end").value || null,
+        changeReason: document.getElementById("med-reason").value, sideNotes: document.getElementById("med-notes").value,
       };
-
       try {
-        if (isEditMode) {
-          await apiPut(`/api/medications/${medId}`, data);
-        } else {
-          await apiPost("/api/medications", data);
-        }
+        if (isEditMode) await apiPut(`/api/medications/${medId}`, data); else await apiPost("/api/medications", data);
         location.href = "/medications.html";
-      } catch (err) {
-        alert("保存に失敗しました: " + err.message);
-        btn.disabled = false;
-        btn.textContent = isEditMode ? "更新する" : "追加する";
-      }
+      } catch (err) { alert("保存に失敗しました"); btn.disabled = false; btn.textContent = isEditMode ? "更新する" : "追加する"; }
     });
 
     document.getElementById("delete-btn").addEventListener("click", async () => {
       if (!confirm("このおくすりを削除しますか？")) return;
-      try {
-        await apiDelete(`/api/medications/${medId}`);
-        location.href = "/medications.html";
-      } catch (err) {
-        alert("削除に失敗しました: " + err.message);
-      }
+      try { await apiDelete(`/api/medications/${medId}`); location.href = "/medications.html"; } catch (err) { alert("削除に失敗しました"); }
     });
   </script>
 </body>

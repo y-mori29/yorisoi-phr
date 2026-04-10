@@ -6,83 +6,29 @@
   <title>診察用サマリー - よりそい PHR</title>
   <link rel="stylesheet" href="/css/style.css">
   <style>
-    .summary-header {
-      background: linear-gradient(135deg, var(--teal), var(--teal-dark));
-      color: var(--white);
-      padding: 20px;
-      border-radius: var(--radius);
-      margin-bottom: 16px;
-      text-align: center;
-    }
-    .summary-header h2 {
-      font-size: 18px;
-      margin-bottom: 4px;
-    }
-    .summary-header p {
-      font-size: 13px;
-      opacity: 0.9;
-    }
-    .summary-compact .card {
-      padding: 12px;
-      margin-bottom: 8px;
-    }
-    .summary-event-row {
-      display: flex;
-      gap: 8px;
-      align-items: baseline;
-      padding: 6px 0;
-      border-bottom: 1px solid var(--gray-100);
-      font-size: 14px;
-    }
+    .summary-header { background: linear-gradient(135deg, var(--teal), var(--teal-dark)); color: var(--white); padding: 20px; border-radius: var(--radius); margin-bottom: 16px; text-align: center; }
+    .summary-header h2 { font-size: 18px; margin-bottom: 4px; }
+    .summary-header p { font-size: 13px; opacity: 0.9; }
+    .summary-compact .card { padding: 12px; margin-bottom: 8px; }
+    .summary-event-row { display: flex; gap: 8px; align-items: baseline; padding: 6px 0; border-bottom: 1px solid var(--gray-100); font-size: 14px; }
     .summary-event-row:last-child { border-bottom: none; }
-    .summary-event-date {
-      flex-shrink: 0;
-      font-size: 12px;
-      color: var(--gray-500);
-      width: 80px;
-    }
-    .summary-footer {
-      text-align: center;
-      padding: 16px;
-      font-size: 11px;
-      color: var(--gray-400);
-    }
-    /* 症状サマリー */
-    .symptom-stats {
-      display: grid;
-      grid-template-columns: repeat(3, 1fr);
-      gap: 8px;
-    }
-    .symptom-stat {
-      text-align: center;
-      padding: 10px 4px;
-      background: var(--gray-50);
-      border-radius: var(--radius-sm);
-    }
-    .symptom-stat-value {
-      font-size: 20px;
-      font-weight: 700;
-      color: var(--brand-600);
-    }
-    .symptom-stat-label {
-      font-size: 11px;
-      color: var(--gray-500);
-      margin-top: 2px;
-    }
+    .summary-event-date { flex-shrink: 0; font-size: 12px; color: var(--gray-500); width: 80px; }
+    .summary-footer { text-align: center; padding: 16px; font-size: 11px; color: var(--gray-400); }
+    .symptom-stats { display: grid; grid-template-columns: repeat(3, 1fr); gap: 8px; }
+    .symptom-stat { text-align: center; padding: 10px 4px; background: var(--gray-50); border-radius: var(--radius-sm); }
+    .symptom-stat-value { font-size: 20px; font-weight: 700; color: var(--brand-600); }
+    .symptom-stat-label { font-size: 11px; color: var(--gray-500); margin-top: 2px; }
   </style>
 </head>
 <body>
-  <div class="header">
+  <div class="header" id="page-header">
     <button class="header-back" onclick="location.href='/'">&larr;</button>
     <h1>診察用サマリー</h1>
   </div>
 
   <div class="content">
     <div id="summary-container">
-      <div class="loading">
-        <div class="loading-spinner"></div>
-        <p class="mt-8 text-sm text-muted">読み込み中...</p>
-      </div>
+      <div class="loading"><div class="loading-spinner"></div><p class="mt-8 text-sm text-muted">読み込み中...</p></div>
     </div>
   </div>
 
@@ -91,119 +37,83 @@
   <script>
     document.addEventListener("DOMContentLoaded", async () => {
       try {
-        await initLiff();
+        const { template } = await initLiff();
+        if (template.color) document.getElementById("page-header").style.background = `linear-gradient(135deg, ${template.color}, ${template.color}dd)`;
+        const medCats = await getMedCategoryLabels();
+        const categoryLabels = getCategoryLabels();
+
         const data = await apiGet("/api/summary");
-        renderSummary(data);
+        renderSummary(data, template, medCats, categoryLabels);
       } catch (err) {
         console.error("Summary load error:", err);
-        document.getElementById("summary-container").innerHTML =
-          '<p class="text-sm" style="color:var(--danger)">読み込みに失敗しました</p>';
+        document.getElementById("summary-container").innerHTML = '<p class="text-sm" style="color:var(--danger)">読み込みに失敗しました</p>';
       }
     });
 
-    function renderSummary(data) {
-      const container = document.getElementById("summary-container");
-      const { profile, activeMedications, recentEvents, symptomSummary } = data;
-
+    function renderSummary(data, template, medCats, catLabels) {
+      const { profile, activeMedications, recentEvents, symptomSummary, labResults } = data;
       const today = new Date();
       const dateStr = `${today.getFullYear()}年${today.getMonth() + 1}月${today.getDate()}日`;
 
-      let html = "";
-
-      // ヘッダー
-      html += `
-        <div class="summary-header">
-          <h2>${profile?.diagnosisName || "潰瘍性大腸炎"}</h2>
+      let html = `
+        <div class="summary-header" ${template.color ? `style="background:linear-gradient(135deg,${template.color},${template.color}dd)"` : ""}>
+          <h2>${escapeHtml(profile?.diagnosisName || template.name)}</h2>
           <p>${profile?.diagnosisDate ? "診断: " + formatDate(profile.diagnosisDate) : ""}</p>
           <p style="margin-top:4px; font-size:11px">作成日: ${dateStr}</p>
         </div>`;
 
-      // 現在の処方薬
-      html += '<div class="summary-section">';
-      html += '<div class="summary-section-title">現在の処方薬</div>';
-
-      if (activeMedications && activeMedications.length > 0) {
-        html += '<div class="card summary-compact">';
+      // 処方薬
+      html += '<div class="summary-section"><div class="summary-section-title">現在の処方薬</div>';
+      if (activeMedications?.length > 0) {
+        html += '<div class="card">';
         activeMedications.forEach((med) => {
-          const catLabel = MED_CATEGORY_LABELS[med.category] || "";
-          html += `
-            <div class="summary-med-item">
-              <div>
-                <div class="summary-med-name">${escapeHtml(med.name)}</div>
-                <div class="text-sm text-muted">${catLabel}${med.dosageForm ? " / " + escapeHtml(med.dosageForm) : ""}</div>
-              </div>
-              <div class="summary-med-since">${formatYearMonth(med.startDate)}〜</div>
-            </div>`;
+          const catLabel = medCats[med.category] || med.category;
+          html += `<div style="display:flex; justify-content:space-between; align-items:center; padding:8px 0; border-bottom:1px solid var(--gray-100)">
+            <div><div style="font-weight:600">${escapeHtml(med.name)}</div><div class="text-sm text-muted">${catLabel}</div></div>
+            <div class="text-sm text-muted">${formatYearMonth(med.startDate)}〜</div></div>`;
         });
-        html += "</div>";
-      } else {
-        html += '<div class="card"><p class="text-sm text-muted">登録なし</p></div>';
+        html += '</div>';
+      } else html += '<div class="card"><p class="text-sm text-muted">登録なし</p></div>';
+      html += '</div>';
+
+      // 症状サマリー
+      if (symptomSummary && template.symptomConfig?.summaryMetrics) {
+        html += '<div class="summary-section"><div class="summary-section-title">直近14日間の症状</div><div class="card"><div class="symptom-stats">';
+        template.symptomConfig.summaryMetrics.forEach((sm) => {
+          const val = symptomSummary.metrics?.[sm.id] ?? "-";
+          html += `<div class="symptom-stat"><div class="symptom-stat-value">${val}</div><div class="symptom-stat-label">${escapeHtml(sm.label)}</div></div>`;
+        });
+        html += `</div><p class="text-sm text-muted mt-8 text-center">${symptomSummary.recordedDays || 0}日間の記録</p></div></div>`;
       }
-      html += "</div>";
 
-      // 直近の症状
-      html += '<div class="summary-section">';
-      html += '<div class="summary-section-title">直近14日間の症状</div>';
-      if (symptomSummary && symptomSummary.recordedDays > 0) {
-        html += `
-          <div class="card">
-            <div class="symptom-stats">
-              <div class="symptom-stat">
-                <div class="symptom-stat-value">${symptomSummary.avgBowelCount}</div>
-                <div class="symptom-stat-label">平均排便回数/日</div>
-              </div>
-              <div class="symptom-stat">
-                <div class="symptom-stat-value">${symptomSummary.bleedingDays}</div>
-                <div class="symptom-stat-label">血便日数</div>
-              </div>
-              <div class="symptom-stat">
-                <div class="symptom-stat-value">${symptomSummary.avgPainScore != null ? symptomSummary.avgPainScore : "-"}</div>
-                <div class="symptom-stat-label">平均痛みスコア</div>
-              </div>
-            </div>
-            <p class="text-sm text-muted mt-8 text-center">${symptomSummary.recordedDays}日間の記録に基づく</p>
-          </div>`;
-      } else {
-        html += '<div class="card"><p class="text-sm text-muted">記録なし</p></div>';
+      // 検査値
+      if (labResults?.length > 0 && template.labConfig?.items) {
+        const latest = labResults[0];
+        html += `<div class="summary-section"><div class="summary-section-title">直近の検査値（${formatDate(latest.date)}）</div><div class="card">`;
+        template.labConfig.items.forEach((item) => {
+          const val = latest.values?.[item.id];
+          if (val == null) return;
+          let color = "var(--teal-dark)";
+          if (item.normalRange && (val < item.normalRange[0] || val > item.normalRange[1])) color = "#f59e0b";
+          if ((item.warnHigh && val > item.warnHigh) || (item.warnLow && val < item.warnLow)) color = "var(--danger)";
+          html += `<div style="display:flex; justify-content:space-between; padding:4px 0; font-size:14px"><span>${escapeHtml(item.label)}</span><span style="font-weight:700; color:${color}">${val} ${item.unit}</span></div>`;
+        });
+        html += '</div></div>';
       }
-      html += "</div>";
 
-      // 直近の治療歴
-      html += '<div class="summary-section">';
-      html += '<div class="summary-section-title">治療歴（直近）</div>';
-
-      if (recentEvents && recentEvents.length > 0) {
-        html += '<div class="card summary-compact">';
+      // 治療歴
+      html += '<div class="summary-section"><div class="summary-section-title">治療歴（直近）</div>';
+      if (recentEvents?.length > 0) {
+        html += '<div class="card">';
         recentEvents.forEach((ev) => {
-          const catLabel = CATEGORY_LABELS[ev.category] || "";
-          html += `
-            <div class="summary-event-row">
-              <span class="summary-event-date">${formatYearMonth(ev.date)}</span>
-              <span><strong>${escapeHtml(ev.title)}</strong>
-                ${ev.detail ? '<span class="text-sm text-muted"> - ' + escapeHtml(ev.detail) + "</span>" : ""}
-              </span>
-            </div>`;
+          html += `<div class="summary-event-row"><span class="summary-event-date">${formatYearMonth(ev.date)}</span><span><strong>${escapeHtml(ev.title)}</strong>${ev.detail ? ' <span class="text-sm text-muted">- ' + escapeHtml(ev.detail) + "</span>" : ""}</span></div>`;
         });
-        html += "</div>";
-      } else {
-        html += '<div class="card"><p class="text-sm text-muted">登録なし</p></div>';
-      }
-      html += "</div>";
+        html += '</div>';
+      } else html += '<div class="card"><p class="text-sm text-muted">登録なし</p></div>';
+      html += '</div>';
 
-      // フッター
-      html += `
-        <div class="summary-footer">
-          よりそい PHR で作成<br>
-          本サマリーは患者本人が入力した情報に基づいています
-        </div>`;
-
-      container.innerHTML = html;
-    }
-
-    function escapeHtml(str) {
-      const d = document.createElement("div");
-      d.textContent = str;
-      return d.innerHTML;
+      html += '<div class="summary-footer">よりそい PHR で作成<br>本サマリーは患者本人が入力した情報に基づいています</div>';
+      document.getElementById("summary-container").innerHTML = html;
     }
   </script>
 </body>

@@ -1,0 +1,201 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+  <title>はじめての設定 - よりそい PHR</title>
+  <link rel="stylesheet" href="/css/style.css">
+  <style>
+    .setup-hero {
+      text-align: center; padding: 32px 20px 24px;
+      background: linear-gradient(135deg, var(--brand-500), var(--brand-600));
+      color: var(--white); margin: -16px -16px 20px; border-radius: 0 0 24px 24px;
+    }
+    .setup-hero-icon { font-size: 48px; margin-bottom: 8px; }
+    .setup-hero h2 { font-size: 20px; font-weight: 700; margin-bottom: 4px; }
+    .setup-hero p { font-size: 14px; opacity: 0.9; }
+
+    .step-indicator { display: flex; justify-content: center; gap: 8px; margin-bottom: 20px; }
+    .step-dot { width: 10px; height: 10px; border-radius: 50%; background: var(--gray-300); transition: background 0.3s; }
+    .step-dot.active { background: var(--brand-500); width: 28px; border-radius: 5px; }
+
+    .disease-list { display: flex; flex-direction: column; gap: 10px; }
+    .disease-option {
+      display: flex; align-items: center; gap: 14px; padding: 16px; background: var(--white);
+      border-radius: var(--radius); border: 2px solid var(--gray-200); cursor: pointer;
+      transition: all 0.15s; text-decoration: none; color: var(--gray-800);
+    }
+    .disease-option:active { transform: scale(0.98); }
+    .disease-option.selected { border-color: var(--brand-500); background: var(--brand-50); }
+    .disease-option-icon { font-size: 32px; flex-shrink: 0; }
+    .disease-option-name { font-size: 16px; font-weight: 700; }
+    .disease-option-desc { font-size: 12px; color: var(--gray-500); margin-top: 2px; }
+    .disease-option-check { margin-left: auto; font-size: 20px; color: var(--brand-500); opacity: 0; transition: opacity 0.2s; }
+    .disease-option.selected .disease-option-check { opacity: 1; }
+
+    /* Step 2: モジュール選択 */
+    .module-list { display: flex; flex-direction: column; gap: 8px; }
+    .module-option {
+      display: flex; align-items: center; gap: 12px; padding: 14px 16px; background: var(--white);
+      border-radius: var(--radius); border: 2px solid var(--gray-200); cursor: pointer; transition: all 0.15s;
+    }
+    .module-option.selected { border-color: var(--teal); background: #f0fdf9; }
+    .module-option.core { border-color: var(--gray-100); background: var(--gray-50); cursor: default; }
+    .module-option-icon { font-size: 24px; flex-shrink: 0; }
+    .module-option-name { font-size: 15px; font-weight: 600; flex: 1; }
+    .module-option-desc { font-size: 12px; color: var(--gray-500); }
+    .module-option-toggle { width: 20px; height: 20px; border-radius: 4px; border: 2px solid var(--gray-300); flex-shrink: 0; display: flex; align-items: center; justify-content: center; }
+    .module-option.selected .module-option-toggle { background: var(--teal); border-color: var(--teal); color: #fff; }
+    .module-option.core .module-option-toggle { background: var(--gray-300); border-color: var(--gray-300); color: #fff; }
+    .core-label { font-size: 10px; color: var(--gray-400); background: var(--gray-100); padding: 1px 6px; border-radius: 4px; margin-left: 6px; }
+
+    .setup-footer { position: fixed; bottom: 0; left: 50%; transform: translateX(-50%); width: 100%; max-width: 430px; padding: 12px 16px; background: var(--white); box-shadow: 0 -2px 12px rgba(0,0,0,0.08); }
+  </style>
+</head>
+<body>
+  <div class="content" style="padding-bottom: 80px;">
+    <!-- Step 1: 疾患選択 -->
+    <div id="step1">
+      <div class="setup-hero">
+        <div class="setup-hero-icon">&#128139;</div>
+        <h2>よりそい PHR</h2>
+        <p>あなたの治療をサポートします</p>
+      </div>
+      <div class="step-indicator"><div class="step-dot active"></div><div class="step-dot"></div></div>
+      <h3 style="font-size:16px; margin-bottom:4px;">あなたの疾患を選んでください</h3>
+      <p class="text-sm text-muted mb-8">あとから変更できます</p>
+      <div class="disease-list" id="disease-list">
+        <div class="loading"><div class="loading-spinner"></div></div>
+      </div>
+    </div>
+
+    <!-- Step 2: モジュール選択 -->
+    <div id="step2" class="hidden">
+      <div class="setup-hero" id="step2-hero">
+        <div class="setup-hero-icon">&#9881;</div>
+        <h2>使う機能を選ぶ</h2>
+        <p>必要な機能だけを選んでカスタマイズ</p>
+      </div>
+      <div class="step-indicator"><div class="step-dot"></div><div class="step-dot active"></div></div>
+      <p class="text-sm text-muted mb-8">&#128274; マークは基本機能（常に有効）です</p>
+      <div class="module-list" id="module-list"></div>
+    </div>
+  </div>
+
+  <!-- フッターボタン -->
+  <div class="setup-footer">
+    <button class="btn btn-primary" id="next-btn" disabled>次へ</button>
+  </div>
+
+  <script src="/js/liff-init.js"></script>
+  <script>
+    let selectedDisease = null;
+    let allTemplates = [];
+    let currentTemplate = null;
+    let moduleSelections = {};
+
+    document.addEventListener("DOMContentLoaded", async () => {
+      // LIFF不要で動作させる（セットアップ画面は認証前）
+      _idToken = "setup";
+      _diseaseId = "uc";
+
+      try {
+        const res = await fetch("/api/templates");
+        allTemplates = await res.json();
+        renderDiseaseList();
+      } catch (e) {
+        console.error(e);
+      }
+    });
+
+    // --- Step 1: 疾患選択 ---
+    function renderDiseaseList() {
+      const container = document.getElementById("disease-list");
+      container.innerHTML = allTemplates.map((t) => `
+        <div class="disease-option" data-id="${t.id}" onclick="selectDisease('${t.id}')">
+          <div class="disease-option-icon">${t.icon}</div>
+          <div>
+            <div class="disease-option-name">${t.name}</div>
+            <div class="disease-option-desc">${t.shortName}</div>
+          </div>
+          <div class="disease-option-check">&#10003;</div>
+        </div>
+      `).join("");
+    }
+
+    function selectDisease(id) {
+      selectedDisease = id;
+      document.querySelectorAll(".disease-option").forEach((el) => {
+        el.classList.toggle("selected", el.dataset.id === id);
+      });
+      const btn = document.getElementById("next-btn");
+      btn.disabled = false;
+      btn.textContent = "次へ";
+      btn.onclick = goToStep2;
+    }
+
+    // --- Step 2: モジュール選択 ---
+    async function goToStep2() {
+      document.getElementById("step1").classList.add("hidden");
+      document.getElementById("step2").classList.remove("hidden");
+
+      // テンプレート読み込み
+      const res = await fetch(`/api/config?disease=${selectedDisease}`);
+      currentTemplate = await res.json();
+
+      const hero = document.getElementById("step2-hero");
+      if (currentTemplate.color) hero.style.background = `linear-gradient(135deg, ${currentTemplate.color}, ${currentTemplate.color}dd)`;
+
+      renderModuleList();
+
+      const btn = document.getElementById("next-btn");
+      btn.textContent = "はじめる";
+      btn.disabled = false;
+      btn.onclick = finishSetup;
+    }
+
+    function renderModuleList() {
+      const container = document.getElementById("module-list");
+      const modules = currentTemplate.modules || [];
+
+      container.innerHTML = modules.map((mod) => {
+        const isCore = mod.core;
+        const isEnabled = mod.enabled;
+        moduleSelections[mod.id] = isEnabled;
+
+        const cls = isCore ? "module-option core" : (isEnabled ? "module-option selected" : "module-option");
+        const toggleIcon = (isCore || isEnabled) ? "&#10003;" : "";
+        const coreLabel = isCore ? '<span class="core-label">&#128274; 基本</span>' : "";
+
+        return `
+          <div class="${cls}" data-mod="${mod.id}" ${isCore ? "" : `onclick="toggleModule('${mod.id}')"`}>
+            <div class="module-option-icon">${mod.icon}</div>
+            <div style="flex:1">
+              <div class="module-option-name">${mod.label}${coreLabel}</div>
+              <div class="module-option-desc">${mod.description}</div>
+            </div>
+            <div class="module-option-toggle">${toggleIcon}</div>
+          </div>`;
+      }).join("");
+    }
+
+    function toggleModule(id) {
+      moduleSelections[id] = !moduleSelections[id];
+      const el = document.querySelector(`[data-mod="${id}"]`);
+      el.classList.toggle("selected", moduleSelections[id]);
+      el.querySelector(".module-option-toggle").innerHTML = moduleSelections[id] ? "&#10003;" : "";
+    }
+
+    // --- 完了 ---
+    function finishSetup() {
+      // 選択結果を保存
+      localStorage.setItem("yorisoi_disease", selectedDisease);
+      localStorage.setItem("yorisoi_modules", JSON.stringify(moduleSelections));
+      localStorage.setItem("yorisoi_setup_done", "1");
+
+      // メイン画面へ
+      location.href = `/?disease=${selectedDisease}`;
+    }
+  </script>
+</body>
+</html>
