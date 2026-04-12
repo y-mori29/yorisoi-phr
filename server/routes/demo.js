@@ -152,6 +152,142 @@ const DEMO_DATA = {
       { id: "l3", date: "2025-03-01", values: { hba1c: 6.9, eGFR: 96, uAlb: 6, tcho: 190, ldl: 105 } },
     ],
   },
+
+  crohn: {
+    profile: { displayName: "デモユーザー", diagnosisName: "クローン病", diagnosisDate: "2017-05-12", diseaseId: "crohn" },
+    timeline: [
+      { id: "ev1", date: "2017-05-12", category: "diagnosis", title: "クローン病と診断", detail: "小腸大腸型。○○大学病院。", source: "manual" },
+      { id: "ev2", date: "2017-05-20", category: "medication_change", title: "ペンタサ + エレンタール開始", detail: "栄養療法と5-ASA併用。", source: "manual" },
+      { id: "ev3", date: "2018-11-05", category: "flare", title: "再燃", detail: "腹痛・下痢増悪。CRP 4.2。", source: "manual" },
+      { id: "ev4", date: "2018-11-10", category: "medication_change", title: "ヒュミラ導入", detail: "生物学的製剤開始。", source: "manual" },
+      { id: "ev5", date: "2020-06-15", category: "exam", title: "大腸内視鏡", detail: "粘膜治癒確認。", source: "manual" },
+      { id: "ev6", date: "2023-03-01", category: "medication_change", title: "ステラーラに変更", detail: "ヒュミラ効果減弱のため変更。", source: "manual" },
+      { id: "ev7", date: "2025-10-01", category: "exam", title: "定期MRE検査", detail: "活動性炎症なし。寛解維持。", source: "manual" },
+    ],
+    medications: [
+      { id: "m1", name: "ステラーラ", genericName: "ウステキヌマブ", category: "biologic", dosageForm: "皮下注射", startDate: "2023-03-01", endDate: null, isActive: true, changeReason: "ヒュミラ効果減弱", sideNotes: "8週ごと自己注射" },
+      { id: "m2", name: "ペンタサ", genericName: "メサラジン", category: "5-ASA", dosageForm: "経口", startDate: "2017-05-20", endDate: null, isActive: true, changeReason: "初回処方", sideNotes: "1日4g" },
+      { id: "m3", name: "エレンタール", genericName: "成分栄養剤", category: "nutritional", dosageForm: "経口", startDate: "2017-05-20", endDate: null, isActive: true, changeReason: "栄養療法", sideNotes: "就寝前1包" },
+      { id: "m4", name: "ヒュミラ", genericName: "アダリムマブ", category: "biologic", dosageForm: "皮下注射", startDate: "2018-11-10", endDate: "2023-03-01", isActive: false, changeReason: "効果減弱", sideNotes: "" },
+    ],
+    labResults: [
+      { id: "l1", date: "2026-03-10", values: { crp: 0.15, hb: 13.5, wbc: 6200, alb: 4.0, esr: 8, plt: 25, ferritin: 85, ca: 9.2 } },
+      { id: "l2", date: "2025-12-05", values: { crp: 0.22, hb: 13.2, wbc: 6500, alb: 3.9, esr: 12, plt: 27, ferritin: 72, ca: 9.1 } },
+      { id: "l3", date: "2025-09-01", values: { crp: 0.18, hb: 13.8, wbc: 5900, alb: 4.1, esr: 10, plt: 24, ferritin: 95, ca: 9.3 } },
+    ],
+  },
+
+  ra: {
+    profile: { displayName: "デモユーザー", diagnosisName: "関節リウマチ", diagnosisDate: "2019-08-20", diseaseId: "ra" },
+    timeline: [
+      { id: "ev1", date: "2019-08-20", category: "diagnosis", title: "関節リウマチと診断", detail: "両手関節腫脹・朝のこわばり90分。RF・抗CCP陽性。", source: "manual" },
+      { id: "ev2", date: "2019-08-25", category: "medication_change", title: "MTX開始", detail: "メトトレキサート 6mg/週", source: "manual" },
+      { id: "ev3", date: "2020-02-10", category: "medication_change", title: "MTX増量", detail: "10mg/週へ。DAS28 4.2。", source: "manual" },
+      { id: "ev4", date: "2021-04-15", category: "medication_change", title: "エンブレル併用開始", detail: "DAS28改善不十分のため生物学的製剤追加。", source: "manual" },
+      { id: "ev5", date: "2022-09-01", category: "exam", title: "関節エコー評価", detail: "滑膜炎消失。寛解達成。", source: "manual" },
+      { id: "ev6", date: "2024-11-20", category: "medication_change", title: "MTX減量", detail: "寛解維持のため8mg/週へ減量。", source: "manual" },
+    ],
+    medications: [
+      { id: "m1", name: "リウマトレックス", genericName: "メトトレキサート", category: "csdmard", dosageForm: "経口", startDate: "2019-08-25", endDate: null, isActive: true, changeReason: "アンカードラッグ", sideNotes: "週1回 8mg" },
+      { id: "m2", name: "エンブレル", genericName: "エタネルセプト", category: "biologic_tnf", dosageForm: "皮下注射", startDate: "2021-04-15", endDate: null, isActive: true, changeReason: "MTX効果不十分", sideNotes: "週1回自己注射" },
+      { id: "m3", name: "葉酸", genericName: "フォリアミン", category: "other", dosageForm: "経口", startDate: "2019-08-25", endDate: null, isActive: true, changeReason: "MTX副作用予防", sideNotes: "週1回 5mg" },
+    ],
+    labResults: [
+      { id: "l1", date: "2026-03-15", values: { crp: 0.08, esr: 10, rf: 45, accp: 82, mmp3: 68, hb: 13.1, plt: 25, alt: 22, cre: 0.85, egfr: 78 } },
+      { id: "l2", date: "2025-12-10", values: { crp: 0.12, esr: 12, rf: 50, accp: 85, mmp3: 75, hb: 12.9, plt: 26, alt: 25, cre: 0.88, egfr: 76 } },
+      { id: "l3", date: "2025-09-05", values: { crp: 0.15, esr: 14, rf: 48, accp: 80, mmp3: 82, hb: 13.0, plt: 24, alt: 20, cre: 0.90, egfr: 74 } },
+    ],
+  },
+
+  ms: {
+    profile: { displayName: "デモユーザー", diagnosisName: "多発性硬化症", diagnosisDate: "2016-02-18", diseaseId: "ms" },
+    timeline: [
+      { id: "ev1", date: "2016-02-18", category: "diagnosis", title: "多発性硬化症と診断", detail: "再発寛解型(RRMS)。MRI多発脱髄病変。", source: "manual" },
+      { id: "ev2", date: "2016-02-25", category: "medication_change", title: "ベタフェロン開始", detail: "インターフェロンβ-1b 隔日皮下注。", source: "manual" },
+      { id: "ev3", date: "2018-06-10", category: "relapse", title: "再発", detail: "視神経炎。左眼視力低下。", source: "manual" },
+      { id: "ev4", date: "2018-06-12", category: "hospitalization", title: "ステロイドパルス", detail: "ソル・メドロール 1g×3日。", source: "manual" },
+      { id: "ev5", date: "2018-08-01", category: "medication_change", title: "テクフィデラに変更", detail: "経口DMTに切替。", source: "manual" },
+      { id: "ev6", date: "2021-11-05", category: "mri", title: "定期MRI", detail: "新規病変なし。EDSS 2.0維持。", source: "manual" },
+      { id: "ev7", date: "2025-03-20", category: "exam", title: "JCV抗体検査", detail: "陰性確認。", source: "manual" },
+    ],
+    medications: [
+      { id: "m1", name: "テクフィデラ", genericName: "フマル酸ジメチル", category: "dmt_oral", dosageForm: "経口", startDate: "2018-08-01", endDate: null, isActive: true, changeReason: "注射剤からの切替", sideNotes: "1日2回" },
+      { id: "m2", name: "ベタフェロン", genericName: "インターフェロンβ-1b", category: "dmt_injection", dosageForm: "皮下注射", startDate: "2016-02-25", endDate: "2018-08-01", isActive: false, changeReason: "経口DMTへ切替", sideNotes: "" },
+    ],
+    labResults: [
+      { id: "l1", date: "2026-03-01", values: { wbc: 5800, lymph: 1450, jcv: 0.3, igg: 1200, alt: 22, ast: 20, cre: 0.8, vitd: 35 } },
+      { id: "l2", date: "2025-09-01", values: { wbc: 6000, lymph: 1500, jcv: 0.35, igg: 1180, alt: 25, ast: 22, cre: 0.82, vitd: 28 } },
+    ],
+  },
+
+  mg: {
+    profile: { displayName: "デモユーザー", diagnosisName: "重症筋無力症", diagnosisDate: "2018-10-05", diseaseId: "mg" },
+    timeline: [
+      { id: "ev1", date: "2018-10-05", category: "diagnosis", title: "重症筋無力症と診断", detail: "全身型。抗AChR抗体陽性。MGFA分類 IIa。", source: "manual" },
+      { id: "ev2", date: "2018-10-10", category: "medication_change", title: "メスチノン開始", detail: "ピリドスチグミン 180mg/日。", source: "manual" },
+      { id: "ev3", date: "2018-11-20", category: "thymectomy", title: "胸腺摘出術", detail: "胸腺腫なし。拡大胸腺摘出。", source: "manual" },
+      { id: "ev4", date: "2019-01-15", category: "medication_change", title: "プレドニン追加", detail: "ステロイド療法開始。", source: "manual" },
+      { id: "ev5", date: "2020-08-10", category: "crisis", title: "筋無力症クリーゼ", detail: "感染契機。IVIG治療。", source: "manual" },
+      { id: "ev6", date: "2020-08-15", category: "ivig", title: "IVIG施行", detail: "5日間投与。症状改善。", source: "manual" },
+      { id: "ev7", date: "2023-04-01", category: "medication_change", title: "ソリリス導入", detail: "難治例として補体阻害薬開始。", source: "manual" },
+    ],
+    medications: [
+      { id: "m1", name: "メスチノン", genericName: "ピリドスチグミン", category: "cholinesterase_inhibitor", dosageForm: "経口", startDate: "2018-10-10", endDate: null, isActive: true, changeReason: "症状改善", sideNotes: "1日3回" },
+      { id: "m2", name: "プレドニン", genericName: "プレドニゾロン", category: "steroid", dosageForm: "経口", startDate: "2019-01-15", endDate: null, isActive: true, changeReason: "免疫抑制", sideNotes: "5mg/日 維持量" },
+      { id: "m3", name: "ソリリス", genericName: "エクリズマブ", category: "biologic", dosageForm: "点滴", startDate: "2023-04-01", endDate: null, isActive: true, changeReason: "難治例", sideNotes: "2週ごと" },
+    ],
+    labResults: [
+      { id: "l1", date: "2026-02-20", values: { achr: 8.5, musk: 0.02, ck: 120, tsh: 2.1, ft4: 1.2, wbc: 7200, lymph: 1800, igg: 1050 } },
+      { id: "l2", date: "2025-08-20", values: { achr: 9.2, musk: 0.02, ck: 135, tsh: 2.3, ft4: 1.1, wbc: 7500, lymph: 1850, igg: 1080 } },
+    ],
+  },
+
+  fabry: {
+    profile: { displayName: "デモユーザー", diagnosisName: "ファブリー病", diagnosisDate: "2012-09-15", diseaseId: "fabry" },
+    timeline: [
+      { id: "ev1", date: "2012-09-15", category: "diagnosis", title: "ファブリー病と診断", detail: "家族歴あり。α-Gal活性低下。", source: "manual" },
+      { id: "ev2", date: "2012-10-01", category: "genetic_test", title: "遺伝子検査", detail: "GLA遺伝子変異確定。", source: "manual" },
+      { id: "ev3", date: "2012-11-01", category: "ert_start", title: "酵素補充療法(ERT)開始", detail: "ファブラザイム 2週ごと点滴。", source: "manual" },
+      { id: "ev4", date: "2015-06-20", category: "exam", title: "定期心エコー", detail: "左室肥大なし。心機能正常。", source: "manual" },
+      { id: "ev5", date: "2018-12-10", category: "complication", title: "一過性脳虚血発作", detail: "左上肢脱力。アスピリン開始。", source: "manual" },
+      { id: "ev6", date: "2023-05-15", category: "exam", title: "腎生検", detail: "軽度のGL-3蓄積。eGFR安定。", source: "manual" },
+    ],
+    medications: [
+      { id: "m1", name: "ファブラザイム", genericName: "アガルシダーゼβ", category: "ert", dosageForm: "点滴", startDate: "2012-11-01", endDate: null, isActive: true, changeReason: "根本治療", sideNotes: "隔週投与" },
+      { id: "m2", name: "テグレトール", genericName: "カルバマゼピン", category: "pain", dosageForm: "経口", startDate: "2013-04-10", endDate: null, isActive: true, changeReason: "四肢疼痛", sideNotes: "200mg/日" },
+      { id: "m3", name: "ブロプレス", genericName: "カンデサルタン", category: "renal", dosageForm: "経口", startDate: "2016-03-01", endDate: null, isActive: true, changeReason: "腎保護", sideNotes: "4mg/日" },
+      { id: "m4", name: "バイアスピリン", genericName: "アスピリン", category: "other", dosageForm: "経口", startDate: "2018-12-12", endDate: null, isActive: true, changeReason: "TIA後の抗血小板療法", sideNotes: "100mg/日" },
+    ],
+    labResults: [
+      { id: "l1", date: "2026-02-15", values: { lysogb3: 4.5, galA: 2.1, egfr: 78, uprot: 0.18, cre: 0.95, bnp: 28, lvef: 62, troponin: 8 } },
+      { id: "l2", date: "2025-08-15", values: { lysogb3: 4.8, galA: 2.0, egfr: 80, uprot: 0.20, cre: 0.92, bnp: 32, lvef: 63, troponin: 9 } },
+    ],
+  },
+
+  pah: {
+    profile: { displayName: "デモユーザー", diagnosisName: "肺動脈性肺高血圧症", diagnosisDate: "2020-01-22", diseaseId: "pah" },
+    timeline: [
+      { id: "ev1", date: "2020-01-22", category: "diagnosis", title: "PAHと診断", detail: "労作時息切れ精査で診断。WHO FC III。", source: "manual" },
+      { id: "ev2", date: "2020-01-25", category: "rhc", title: "右心カテーテル検査", detail: "mPAP 48mmHg、PVR 8.5 WU。", source: "manual" },
+      { id: "ev3", date: "2020-02-01", category: "medication_change", title: "アドシルカ開始", detail: "タダラフィル 40mg/日。", source: "manual" },
+      { id: "ev4", date: "2020-04-15", category: "medication_change", title: "オプスミット追加", detail: "2剤併用療法へ。", source: "manual" },
+      { id: "ev5", date: "2021-06-10", category: "hospitalization", title: "心不全増悪で入院", detail: "利尿薬調整。", source: "manual" },
+      { id: "ev6", date: "2021-07-01", category: "medication_change", title: "ウプトラビ追加", detail: "3剤併用療法。WHO FC II改善。", source: "manual" },
+      { id: "ev7", date: "2025-09-10", category: "rhc", title: "定期右心カテーテル", detail: "mPAP 32mmHg、PVR 4.2 WU。改善維持。", source: "manual" },
+    ],
+    medications: [
+      { id: "m1", name: "アドシルカ", genericName: "タダラフィル", category: "pde5_inhibitor", dosageForm: "経口", startDate: "2020-02-01", endDate: null, isActive: true, changeReason: "初回処方", sideNotes: "40mg/日" },
+      { id: "m2", name: "オプスミット", genericName: "マシテンタン", category: "era", dosageForm: "経口", startDate: "2020-04-15", endDate: null, isActive: true, changeReason: "併用療法", sideNotes: "10mg/日" },
+      { id: "m3", name: "ウプトラビ", genericName: "セレキシパグ", category: "prostacyclin_oral", dosageForm: "経口", startDate: "2021-07-01", endDate: null, isActive: true, changeReason: "3剤併用", sideNotes: "1日2回" },
+      { id: "m4", name: "ラシックス", genericName: "フロセミド", category: "other", dosageForm: "経口", startDate: "2020-02-01", endDate: null, isActive: true, changeReason: "利尿・浮腫対策", sideNotes: "20mg/日" },
+      { id: "m5", name: "ワーファリン", genericName: "ワルファリン", category: "anticoagulant", dosageForm: "経口", startDate: "2020-02-01", endDate: null, isActive: true, changeReason: "血栓予防", sideNotes: "INR 1.5-2.5" },
+    ],
+    labResults: [
+      { id: "l1", date: "2026-03-05", values: { bnp: 85, ntprobnp: 280, egfr: 72, cre: 0.95, ast: 22, alt: 25, ua: 6.8, na: 138, k: 4.2, hb: 13.5, plt: 22 } },
+      { id: "l2", date: "2025-12-05", values: { bnp: 92, ntprobnp: 310, egfr: 70, cre: 0.98, ast: 24, alt: 28, ua: 7.1, na: 137, k: 4.0, hb: 13.2, plt: 23 } },
+      { id: "l3", date: "2025-09-05", values: { bnp: 78, ntprobnp: 265, egfr: 74, cre: 0.92, ast: 20, alt: 22, ua: 6.5, na: 139, k: 4.3, hb: 13.8, plt: 24 } },
+    ],
+  },
 };
 
 // ========================================

@@ -1,0 +1,80 @@
+{
+  "id": "mg",
+  "name": "重症筋無力症",
+  "shortName": "MG",
+  "description": "重症筋無力症（Myasthenia Gravis）の治療歴・薬・症状を管理",
+  "color": "#0891b2",
+  "icon": "💪",
+
+  "modules": [
+    { "id": "timeline", "label": "治療タイムライン", "description": "治療経歴を時系列で管理", "icon": "📅", "page": "timeline.html", "enabled": true, "core": true },
+    { "id": "medications", "label": "おくすり管理", "description": "処方薬と変更履歴", "icon": "💊", "page": "medications.html", "enabled": true, "core": true },
+    { "id": "symptom-log", "label": "症状きろく", "description": "筋力低下・日内変動を記録", "icon": "📝", "page": "symptom-log.html", "enabled": true },
+    { "id": "restroom", "label": "トイレさがし", "description": "近くのトイレをマップで表示", "icon": "🚾", "page": "restroom.html", "enabled": false },
+    { "id": "emergency-card", "label": "緊急カード", "description": "救急時に見せる情報カード", "icon": "🆘", "page": "emergency-card.html", "enabled": true, "core": true },
+    { "id": "lab-tracker", "label": "検査値きろく", "description": "血液検査の推移をグラフ表示", "icon": "🔬", "page": "lab-tracker.html", "enabled": true, "core": true },
+    { "id": "summary", "label": "診察用サマリー", "description": "診察時に医師に見せる画面", "icon": "📋", "page": "summary.html", "enabled": true, "core": true, "fullWidth": true }
+  ],
+
+  "medicationMaster": "mg-medications.json",
+
+  "symptomConfig": {
+    "title": "症状きろく",
+    "metrics": [
+      { "id": "muscleWeakness", "label": "筋力低下", "type": "scale", "min": 0, "max": 5, "description": "0=なし ← → 5=動かせない" },
+      { "id": "ptosis", "label": "眼瞼下垂（まぶたが下がる）", "type": "toggle" },
+      { "id": "diplopia", "label": "複視（物が二重に見える）", "type": "toggle" },
+      { "id": "dysphagia", "label": "嚥下困難（飲み込みづらい）", "type": "toggle" },
+      { "id": "dysarthria", "label": "構音障害（話しづらい）", "type": "toggle" },
+      { "id": "dyspnea", "label": "呼吸困難", "type": "toggle", "dangerColor": true },
+      { "id": "dailyFluctuation", "label": "日内変動の差", "type": "scale", "min": 0, "max": 5, "description": "朝と夕方の症状差" }
+    ],
+    "summaryMetrics": [
+      { "id": "muscleWeakness", "label": "平均筋力低下", "aggregate": "avg" },
+      { "id": "ptosis", "label": "眼瞼下垂日数", "aggregate": "countTrue" },
+      { "id": "diplopia", "label": "複視日数", "aggregate": "countTrue" },
+      { "id": "dysphagia", "label": "嚥下困難日数", "aggregate": "countTrue" },
+      { "id": "dyspnea", "label": "呼吸困難日数", "aggregate": "countTrue" }
+    ]
+  },
+
+  "labConfig": {
+    "items": [
+      { "id": "achr", "label": "抗AChR抗体", "unit": "nmol/L", "normalRange": [0, 0.2], "warnHigh": 0.5 },
+      { "id": "musk", "label": "抗MuSK抗体", "unit": "nmol/L", "normalRange": [0, 0.05] },
+      { "id": "ck", "label": "CK（クレアチンキナーゼ）", "unit": "U/L", "normalRange": [40, 200], "warnHigh": 300 },
+      { "id": "tsh", "label": "甲状腺TSH", "unit": "μIU/mL", "normalRange": [0.4, 4.0] },
+      { "id": "ft4", "label": "FT4", "unit": "ng/dL", "normalRange": [0.9, 1.7] },
+      { "id": "wbc", "label": "白血球数", "unit": "/μL", "normalRange": [3500, 9000] },
+      { "id": "lymph", "label": "リンパ球数", "unit": "/μL", "normalRange": [1000, 4000] },
+      { "id": "igg", "label": "IgG", "unit": "mg/dL", "normalRange": [870, 1700] }
+    ]
+  },
+
+  "emergencyConfig": {
+    "title": "緊急情報カード",
+    "subtitle": "重症筋無力症",
+    "fields": [
+      { "id": "mgType", "label": "病型", "placeholder": "例: 全身型/眼筋型" },
+      { "id": "mgfa", "label": "MGFA分類", "placeholder": "例: IIa" }
+    ],
+    "warnings": [
+      "⚠️ クリーゼ（呼吸不全）は緊急搬送が必要",
+      "禁忌薬剤: アミノグリコシド系/キノロン系抗菌薬、βブロッカー、マグネシウム製剤",
+      "手術時は筋弛緩薬の選択に注意（主治医連絡必須）",
+      "発熱・感染はクリーゼのトリガーになる",
+      "ステロイド急な中断は副腎不全のリスク"
+    ]
+  },
+
+  "timelineCategories": [
+    { "id": "diagnosis", "label": "診断", "color": "#dbeafe" },
+    { "id": "crisis", "label": "クリーゼ", "color": "#fca5a5" },
+    { "id": "medication_change", "label": "薬変更", "color": "#d1fae5" },
+    { "id": "plasma_exchange", "label": "血漿交換", "color": "#c7d2fe" },
+    { "id": "ivig", "label": "IVIG", "color": "#bae6fd" },
+    { "id": "thymectomy", "label": "胸腺摘出", "color": "#fecaca" },
+    { "id": "exam", "label": "検査", "color": "#e9d5ff" },
+    { "id": "other", "label": "その他", "color": "#e5e5e5" }
+  ]
+}

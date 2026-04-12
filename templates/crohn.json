@@ -1,0 +1,76 @@
+{
+  "id": "crohn",
+  "name": "クローン病",
+  "shortName": "CD",
+  "description": "クローン病（Crohn's Disease）の治療歴・薬・症状を管理",
+  "color": "#f97316",
+  "icon": "🩺",
+
+  "modules": [
+    { "id": "timeline", "label": "治療タイムライン", "description": "治療経歴を時系列で管理", "icon": "📅", "page": "timeline.html", "enabled": true, "core": true },
+    { "id": "medications", "label": "おくすり管理", "description": "処方薬と変更履歴", "icon": "💊", "page": "medications.html", "enabled": true, "core": true },
+    { "id": "symptom-log", "label": "症状きろく", "description": "毎日の体調をかんたん記録", "icon": "📝", "page": "symptom-log.html", "enabled": true },
+    { "id": "restroom", "label": "トイレさがし", "description": "近くのトイレをマップで表示", "icon": "🚾", "page": "restroom.html", "enabled": true },
+    { "id": "emergency-card", "label": "緊急カード", "description": "救急時に見せる情報カード", "icon": "🆘", "page": "emergency-card.html", "enabled": true, "core": true },
+    { "id": "lab-tracker", "label": "検査値きろく", "description": "血液検査の推移をグラフ表示", "icon": "🔬", "page": "lab-tracker.html", "enabled": true, "core": true },
+    { "id": "summary", "label": "診察用サマリー", "description": "診察時に医師に見せる画面", "icon": "📋", "page": "summary.html", "enabled": true, "core": true, "fullWidth": true }
+  ],
+
+  "medicationMaster": "crohn-medications.json",
+
+  "symptomConfig": {
+    "title": "症状きろく",
+    "metrics": [
+      { "id": "bowelCount", "label": "排便回数", "type": "counter", "min": 0, "max": 30, "default": 0, "unit": "回" },
+      { "id": "bristolScale", "label": "便の状態（ブリストルスケール）", "type": "scale", "min": 1, "max": 7, "labels": ["硬", "塊", "ひび", "普通", "柔", "泥", "水"], "description": "1=硬い ← → 7=水様" },
+      { "id": "abdominalPain", "label": "腹痛", "type": "scale", "min": 0, "max": 5, "description": "0=なし ← → 5=激痛" },
+      { "id": "bleeding", "label": "血便あり", "type": "toggle", "dangerColor": true },
+      { "id": "fatigue", "label": "疲労感", "type": "scale", "min": 0, "max": 5 },
+      { "id": "weight", "label": "体重変動", "type": "scale", "min": 0, "max": 4, "labels": ["減少", "やや減", "維持", "やや増", "増加"] }
+    ],
+    "summaryMetrics": [
+      { "id": "bowelCount", "label": "平均回数/日", "aggregate": "avg" },
+      { "id": "abdominalPain", "label": "平均腹痛", "aggregate": "avg" },
+      { "id": "bleeding", "label": "血便日数", "aggregate": "countTrue" },
+      { "id": "fatigue", "label": "平均疲労", "aggregate": "avg" }
+    ]
+  },
+
+  "labConfig": {
+    "items": [
+      { "id": "crp", "label": "CRP", "unit": "mg/dL", "normalRange": [0, 0.3], "warnHigh": 1.0 },
+      { "id": "hb", "label": "Hb（ヘモグロビン）", "unit": "g/dL", "normalRange": [12, 17], "warnLow": 10 },
+      { "id": "wbc", "label": "白血球数", "unit": "/μL", "normalRange": [3500, 9000] },
+      { "id": "alb", "label": "アルブミン", "unit": "g/dL", "normalRange": [3.8, 5.2], "warnLow": 3.0 },
+      { "id": "esr", "label": "赤沈（ESR）", "unit": "mm/h", "normalRange": [0, 15], "warnHigh": 30 },
+      { "id": "plt", "label": "血小板数", "unit": "万/μL", "normalRange": [15, 35] },
+      { "id": "ferritin", "label": "フェリチン", "unit": "ng/mL", "normalRange": [20, 250] },
+      { "id": "ca", "label": "Ca（カルシウム）", "unit": "mg/dL", "normalRange": [8.6, 10.2] }
+    ]
+  },
+
+  "emergencyConfig": {
+    "title": "緊急情報カード",
+    "subtitle": "クローン病",
+    "fields": [
+      { "id": "lesion", "label": "病変部位", "placeholder": "例: 小腸型・大腸型" },
+      { "id": "severity", "label": "活動性", "placeholder": "例: 寛解期" }
+    ],
+    "warnings": [
+      "免疫抑制剤使用中の場合、感染症リスクに注意",
+      "生物学的製剤使用中は日和見感染・結核再燃のリスクあり",
+      "激しい腹痛・発熱は腸閉塞/穿孔の疑いで緊急受診",
+      "ステロイド服用中の急な中断は副腎不全のリスク"
+    ]
+  },
+
+  "timelineCategories": [
+    { "id": "diagnosis", "label": "診断", "color": "#dbeafe" },
+    { "id": "hospitalization", "label": "入院", "color": "#fde68a" },
+    { "id": "medication_change", "label": "薬変更", "color": "#d1fae5" },
+    { "id": "exam", "label": "検査", "color": "#e9d5ff" },
+    { "id": "surgery", "label": "手術", "color": "#fecaca" },
+    { "id": "flare", "label": "再燃", "color": "#fca5a5" },
+    { "id": "other", "label": "その他", "color": "#e5e5e5" }
+  ]
+}
