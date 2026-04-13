@@ -26,7 +26,7 @@ const DEMO_MODE = process.env.DEMO_MODE === "1" || !process.env.GOOGLE_CLOUD_PRO
 
 // --- Middleware ---
 app.use(cors({ origin: ALLOW_ORIGIN }));
-app.use(express.json({ limit: "15mb" }));
+app.use(express.json({ limit: "30mb" }));
 
 // 静的ファイル配信（LIFF フロントエンド）
 app.use(express.static(path.join(__dirname, "../public")));

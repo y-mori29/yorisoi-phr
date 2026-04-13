@@ -19,8 +19,8 @@ router.use((req, res, next) => {
   next();
 });
 
-// Express の JSON サイズ上限を上げる（画像アップロード用）
-router.use(express.json({ limit: "15mb" }));
+// Express の JSON サイズ上限を上げる（画像・音声アップロード用）
+router.use(express.json({ limit: "30mb" }));
 
 // ======================================================
 // POST /api/ai/parse-symptom
@@ -98,14 +98,62 @@ ${fieldDescriptions}
 });
 
 // ======================================================
+// POST /api/ai/transcribe
+// 音声を書き起こしだけ行う（AIチャットからの利用など）
+// body: { audio: "data:audio/...", }
+// ======================================================
+router.post("/transcribe", async (req, res) => {
+  try {
+    const { audio } = req.body;
+    if (!audio) return res.status(400).json({ error: "audio required" });
+
+    console.log("[transcribe] audio dataUri length:", audio.length, "head:", audio.slice(0, 50));
+
+    const audioPart = dataUriToInlineData(audio);
+    console.log("[transcribe] mimeType:", audioPart.inlineData.mimeType, "base64 length:", audioPart.inlineData.data.length);
+
+    const model = getTextModel();
+    const prompt = `この音声ファイルを日本語で書き起こしてください。
+
+【重要な制約】
+- 音声が無音・雑音・聞き取れない場合は空文字列 "" を返すこと
+- 実際に聞こえた日本語のみを書き起こすこと
+- 聞こえていない内容を創作・補完することは絶対禁止
+
+出力は次のJSONのみ: {"transcript": "書き起こしたテキスト または ''"}
+説明や前置きは不要です。`;
+
+    const result = await model.generateContent([prompt, audioPart]);
+    const responseText = result.response.text();
+    console.log("[transcribe] Gemini response:", responseText.slice(0, 200));
+    const parsed = parseJsonSafe(responseText);
+
+    if (!parsed) {
+      return res.status(500).json({ error: "Failed to parse AI response", raw: responseText.slice(0, 500) });
+    }
+
+    res.json({ transcript: parsed.transcript || "" });
+  } catch (err) {
+    console.error("transcribe error:", err.message);
+    console.error(err.stack);
+    res.status(500).json({
+      error: err.message,
+      hint: "音声フォーマットが対応していない可能性があります。audio/webm, audio/mp4, audio/ogg, audio/wavを試してください。",
+    });
+  }
+});
+
+// ======================================================
 // POST /api/ai/voice-symptom
-// 音声（WebM/MP4/WAV）→ Geminiマルチモーダルで書き起こし+構造化
+// 音声 → Geminiマルチモーダルで書き起こし+構造化
 // body: { audio: "data:audio/webm;base64,...", diseaseId }
 // ======================================================
 router.post("/voice-symptom", async (req, res) => {
   try {
     const { audio, diseaseId } = req.body;
     if (!audio) return res.status(400).json({ error: "audio required" });
+
+    console.log("[voice-symptom] audio length:", audio.length, "head:", audio.slice(0, 50));
 
     const tmpl = getTemplate(diseaseId || "uc");
     if (!tmpl) return res.status(404).json({ error: "Template not found" });
@@ -120,8 +168,16 @@ router.post("/voice-symptom", async (req, res) => {
       return desc;
     }).join("\n");
 
-    const prompt = `添付の音声ファイルには、日本語で症状を話している患者の声が含まれています。
-まず音声を書き起こし、その内容から症状データを抽出してください。
+    const prompt = `添付の音声ファイルを処理してください。日本語で症状を話している患者の声が含まれている想定です。
+
+## やること
+1. 音声を正確に書き起こす
+2. 書き起こし内容から症状データを抽出する
+
+## 重要な制約（ハルシネーション防止）
+- 音声が無音・雑音・聞き取れない場合は transcript: "" を返し、values は全て null にすること
+- 実際に聞こえた日本語のみを書き起こすこと
+- 聞こえていない内容を創作・補完することは絶対禁止
 
 ## 抽出対象のフィールド
 ${fieldDescriptions}
@@ -131,31 +187,30 @@ ${fieldDescriptions}
 出力: {"transcript":"今日は排便4回、血便少しあり、お腹の痛みは2くらい、調子は悪くない","values":{"bowelCount":4,"bristolScale":null,"bleeding":true,"painScore":2},"memo":"調子は悪くない"}
 
 ## ルール
-- transcript には音声の書き起こし全文を入れる
-- values には各フィールドの抽出値を入れる（該当情報がない項目は null）
+- transcript には音声の書き起こし全文を入れる（聞こえなければ""）
+- values には書き起こしから確認できる値のみを入れる（該当なしは null）
 - 「あり」「少し」「ちょっと」→ true、「なし」「ない」→ false
-- memo には自由記述（感想等）のみ
-- 聞き取れない音声の場合は transcript: "" を返す
 
 ## 出力JSON形式
 {
-  "transcript": "書き起こしたテキスト",
-  "values": {
-${metrics.map((m) => `    "${m.id}": <値 or null>`).join(",\n")}
-  },
+  "transcript": "書き起こしたテキスト または ''",
+  "values": { ${metrics.map((m) => `"${m.id}": <値 or null>`).join(", ")} },
   "memo": <文字列 or null>
 }
 
 JSONのみを返してください。`;
 
     const audioPart = dataUriToInlineData(audio);
+    console.log("[voice-symptom] mimeType:", audioPart.inlineData.mimeType);
+
     const model = getTextModel();
     const result = await model.generateContent([prompt, audioPart]);
     const responseText = result.response.text();
+    console.log("[voice-symptom] Gemini response length:", responseText.length);
     const parsed = parseJsonSafe(responseText);
 
     if (!parsed) {
-      return res.status(500).json({ error: "Failed to parse AI response", raw: responseText });
+      return res.status(500).json({ error: "Failed to parse AI response", raw: responseText.slice(0, 500) });
     }
 
     // サニタイズ
@@ -171,8 +226,12 @@ JSONのみを返してください。`;
       memo: parsed.memo || null,
     });
   } catch (err) {
-    console.error("voice-symptom error:", err);
-    res.status(500).json({ error: err.message });
+    console.error("voice-symptom error:", err.message);
+    console.error(err.stack);
+    res.status(500).json({
+      error: err.message,
+      hint: "音声フォーマットが対応していない可能性があります。",
+    });
   }
 });
 
@@ -181,6 +240,41 @@ JSONのみを返してください。`;
 // 対話型で症状を聞き取る
 // body: { messages: [{role, content}...], diseaseId }
 // ======================================================
+/**
+ * メトリクスを自然言語の説明に変換
+ * scale型は labels があればそれを使い、なければ汎用ラベルを生成
+ */
+function describeMetricForAI(m) {
+  const baseInfo = `${m.id}（${m.label}）`;
+  if (m.type === "counter") {
+    return `${baseInfo}: 数値入力${m.unit ? "（単位: " + m.unit + "）" : ""}、範囲${m.min}〜${m.max}`;
+  }
+  if (m.type === "toggle") {
+    return `${baseInfo}: あり(true) / なし(false) の2択`;
+  }
+  if (m.type === "scale") {
+    // labelsを優先
+    if (Array.isArray(m.labels) && m.labels.length === (m.max - m.min + 1)) {
+      const opts = m.labels.map((label, i) => `${m.min + i}=${label}`).join(" / ");
+      return `${baseInfo}: ${opts}`;
+    }
+    // 汎用ラベル生成
+    const diff = m.max - m.min;
+    const generic = {
+      3: ["なし", "軽い", "中", "強い"],
+      4: ["なし", "軽度", "中程度", "強い", "最も強い"],
+      5: ["なし", "すこし", "中くらい", "強め", "とても強い", "耐えられない"],
+    };
+    const labels = generic[diff];
+    if (labels) {
+      const opts = labels.map((l, i) => `${m.min + i}=${l}`).join(" / ");
+      return `${baseInfo}: ${opts}`;
+    }
+    return `${baseInfo}: ${m.min}〜${m.max}の段階`;
+  }
+  return baseInfo;
+}
+
 router.post("/chat-symptom", async (req, res) => {
   try {
     const { messages = [], diseaseId } = req.body;
@@ -188,35 +282,39 @@ router.post("/chat-symptom", async (req, res) => {
     if (!tmpl) return res.status(404).json({ error: "Template not found" });
 
     const metrics = tmpl.symptomConfig?.metrics || [];
-    const fieldsDesc = metrics.map((m) => {
-      let d = `${m.id}(${m.label}, ${m.type}`;
-      if (m.type === "counter" || m.type === "scale") d += ` ${m.min}-${m.max}`;
-      d += ")";
-      return d;
-    }).join(", ");
+    const fieldsDesc = metrics.map(describeMetricForAI).map((d) => "- " + d).join("\n");
 
-    const systemContext = `あなたは${tmpl.name}の患者から今日の症状を聞き取る、優しく丁寧な対話AIアシスタントです。
+    const systemContext = `あなたは${tmpl.name}の患者から今日の症状を聞き取る、優しく親しみやすい対話AIアシスタントです。
 
-## 収集したいフィールド
+## 収集したいフィールド（内部的なマッピング用）
 ${fieldsDesc}
 
-## あなたの役割
-- 患者が自由に話した内容から、該当するフィールドに値をマッピングする
-- まだ埋まっていないフィールドがあれば、自然な流れで聞き出す
-- 診断・評価・アドバイスは絶対にしない（「大変でしたね」等の共感と次の質問のみ）
+## 重要な役割
+- 患者が日常の言葉で話した内容を、内部のフィールドに正確にマッピングする
+- 数値そのものではなく、自然な言葉で質問・会話する（「1〜7で」「0〜5で」等の機械的な聞き方は絶対NG）
+- 診断・評価・アドバイスは禁止（共感の一言と次の質問のみ）
+
+## 質問の仕方（超重要）
+**悪い例**: 「便の硬さを1〜7で教えてください」
+**良い例**: 「便の状態はどうでしたか？硬い感じ？普通？それとも柔らかめ？」
+
+**悪い例**: 「痛みを0〜5で教えてください」
+**良い例**: 「お腹の痛みはどのくらいでしたか？全くない／少し／中くらい／強い のどれかで教えてください」
 
 ## 会話の進め方
-1. 患者のメッセージから値を抽出（複数項目まとめて話されたら全部抽出）
-2. まだ埋まっていない項目があれば、次の質問を1つだけ自然な言葉で聞く（機械的な「次は○○を教えて」ではなく、共感を挟んで）
-3. 大部分の項目が埋まったら「他に気になることはありますか？」と締めくくる
-4. ユーザーが「これで大丈夫」「終わり」等と言ったら finished: true
+1. 患者の自由な言葉から値を抽出する（例:「ちょっと柔らかめ」→ bristolScale: 5）
+2. 患者の言葉から値が推測できれば積極的にマッピング（「普通」=中央値、「ちょっと」=1段階）
+3. まだ聞けていない項目を、1回の返信で1〜2個だけ自然な日本語で聞く
+4. 3項目以上集まったら「他に気になることはありますか？なければ記録します」と締めくくる
+5. 患者が「大丈夫」「終わり」「OK」「これで」等と言ったら finished: true
 
 ## 出力ルール
-- collected は既に判明している全項目を含める（新規抽出だけでなく蓄積）
-- 数値は数値型で、真偽はbooleanで（"あり"→true、"なし"→false）
-- 該当情報がまだ聞けていないフィールドは null のまま
+- collected は既に判明している全項目（蓄積型、前回分も含める）
+- 数値は数値型、真偽はbooleanで（"あり"=true、"なし"=false）
+- まだ聞けていない項目は null のまま
+- reply は自然な日本語（機械的な数字は使わない）
 
-## 出力形式 JSON
+## 出力形式 JSON（これ以外は出力しない）
 {
   "reply": "次の質問または締めの言葉",
   "collected": { "<fieldId>": <値 or null>, ... },
