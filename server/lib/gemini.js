@@ -3,30 +3,22 @@ const { GoogleGenerativeAI } = require("@google/generative-ai");
 const API_KEY = process.env.GEMINI_API_KEY;
 const genAI = API_KEY ? new GoogleGenerativeAI(API_KEY) : null;
 
+const MODEL_NAME = "gemini-2.5-flash";
+
 /**
- * AIの役割を限定する共通システムプロンプト
- * - 診断・重症度判定・解釈は一切禁止
- * - 与えられた情報の転記のみ
+ * 注記：安全ルールは「全禁止」ではなく「評価判定の禁止」に限定する。
+ * 全面禁止にするとGeminiが値の抽出まで控えてしまうため、
+ * 抽出（転記）は積極的にやらせつつ、診断・評価のみ明確に禁止する。
  */
-const SAFETY_SYSTEM_INSTRUCTION = `あなたは患者の入力を補助するAIです。
-
-【厳守事項】
-1. 診断・重症度判定・治療方針の示唆は絶対にしないこと
-2. 医学的解釈・コメント・警告・アドバイスは一切出力しないこと
-3. 患者の発話/写真から読み取れる情報のみを、指定されたフィールドに転記すること
-4. 不明・読み取れない項目は null を返すこと
-5. 推測で値を埋めないこと
-6. 出力は必ず指定されたJSON形式のみ。説明文・前置き・断り書きは一切不要
-7. 「基準値を超えている」「注意が必要」などの評価表現は絶対に使わないこと
-
-あなたは医師ではなく、データ入力の代筆者です。`;
+const SAFETY_INSTRUCTION_SHORT = `あなたはデータ入力補助AIです。患者が言った情報を指定フィールドに正確に転記します。
+診断・重症度評価・治療アドバイスは行いません（転記のみ）。出力は必ずJSONのみで、前置きや説明文は不要です。`;
 
 /** テキスト入力用モデル（軽量・速い） */
 function getTextModel() {
   if (!genAI) throw new Error("GEMINI_API_KEY not configured");
   return genAI.getGenerativeModel({
-    model: "gemini-2.5-flash",
-    systemInstruction: SAFETY_SYSTEM_INSTRUCTION,
+    model: MODEL_NAME,
+    systemInstruction: SAFETY_INSTRUCTION_SHORT,
     generationConfig: {
       temperature: 0.1,
       responseMimeType: "application/json",
@@ -38,8 +30,8 @@ function getTextModel() {
 function getVisionModel() {
   if (!genAI) throw new Error("GEMINI_API_KEY not configured");
   return genAI.getGenerativeModel({
-    model: "gemini-2.5-flash",
-    systemInstruction: SAFETY_SYSTEM_INSTRUCTION,
+    model: MODEL_NAME,
+    systemInstruction: SAFETY_INSTRUCTION_SHORT,
     generationConfig: {
       temperature: 0.1,
       responseMimeType: "application/json",
@@ -51,9 +43,9 @@ function getVisionModel() {
 function getChatModel() {
   if (!genAI) throw new Error("GEMINI_API_KEY not configured");
   return genAI.getGenerativeModel({
-    model: "gemini-2.5-flash",
-    systemInstruction: SAFETY_SYSTEM_INSTRUCTION +
-      "\n\n対話型で症状を聞き取る場合は、短く優しい質問を1つずつ投げてください。最後に `finished: true` をレスポンスJSONに含めて完了を伝えます。",
+    model: MODEL_NAME,
+    systemInstruction: SAFETY_INSTRUCTION_SHORT +
+      "\n対話型で症状を聞き取る場合は、短く優しい質問を1つずつ投げます。診断や評価は行わず、共感と次の質問のみ。",
     generationConfig: {
       temperature: 0.4,
       responseMimeType: "application/json",

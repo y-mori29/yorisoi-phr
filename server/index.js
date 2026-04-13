@@ -1,6 +1,23 @@
+const path = require("path");
+
+// --- .env 読み込み（複数の場所から探す） ---
+const envCandidates = [
+  path.join(__dirname, "../.env"),                 // yorisoi-phr/.env
+  path.join(__dirname, "../../secure/.env"),        // patient/secure/.env ★
+];
+for (const envPath of envCandidates) {
+  try {
+    const fs = require("fs");
+    if (fs.existsSync(envPath)) {
+      require("dotenv").config({ path: envPath });
+      console.log("Loaded env from:", envPath);
+      break;
+    }
+  } catch (e) {}
+}
+
 const express = require("express");
 const cors = require("cors");
-const path = require("path");
 
 const app = express();
 const PORT = process.env.PORT || 8080;

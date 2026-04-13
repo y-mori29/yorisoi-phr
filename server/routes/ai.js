@@ -5,7 +5,8 @@
  */
 
 const express = require("express");
-const { getTextModel, getVisionModel, getChatModel, parseJsonSafe, dataUriToInlineData, hasApiKey } = require("../lib/gemini");
+const { SchemaType } = require("@google/generative-ai");
+const { getTextModel, getVisionModel, getChatModel, parseJsonSafe, dataUriToInlineData, hasApiKey, genAI } = require("../lib/gemini");
 const { getTemplate, getMedicationMaster } = require("../lib/templates");
 
 const router = express.Router();
@@ -43,28 +44,43 @@ router.post("/parse-symptom", async (req, res) => {
       return desc;
     }).join("\n");
 
-    const prompt = `次の患者の発話を、指定されたフィールドに転記してください。
+    const fieldIds = metrics.map((m) => m.id);
+    const prompt = `患者の発話からデータを抽出してJSONを出力します。
 
-【患者の発話】
-${text}
-
-【転記先フィールド】
+【フィールド】
 ${fieldDescriptions}
 
-【出力形式】
-以下のJSON形式のみで出力。発話に含まれない項目は null を返す。
+【例1】
+発話: "今日は排便3回、血便なし、痛みなし、調子良い"
+出力: {"bowelCount":3,"bristolScale":null,"bleeding":false,"painScore":0,"memo":"調子良い"}
 
-{
-${metrics.map((m) => `  "${m.id}": <値 or null>`).join(",\n")},
-  "memo": "<発話のうちフィールドに該当しない自由記述があれば転記、なければ null>"
-}
+【例2】
+発話: "排便5回で血便少しあります。お腹の痛みは3くらい。かなり疲れた"
+出力: {"bowelCount":5,"bristolScale":null,"bleeding":true,"painScore":3,"memo":"かなり疲れた"}
 
-【注意】
-- 推測や補完はしない
-- 医学的解釈・評価コメントは一切加えない
-- 「痛み2くらい」なら painScore: 2、明言されなければ null`;
+【例3】
+発話: "今日は普通、4回だけだった"
+出力: {"bowelCount":4,"bristolScale":null,"bleeding":null,"painScore":null,"memo":"普通の日"}
 
-    const model = getTextModel();
+【ルール】
+- 発話に数値があれば必ず抽出（「4回」→4）
+- 「あり」「ちょっと」「少し」→ true、「なし」「ない」→ false
+- 発話に触れられていない項目のみ null
+- memoは短い感想のみ（フィールドで抽出した情報は入れない）
+
+【今回の発話】
+"${text}"
+
+上記の発話から ${fieldIds.join(", ")}, memo を含むJSONを出力してください。`;
+
+    const model = genAI.getGenerativeModel({
+      model: "gemini-2.5-flash",
+      systemInstruction: "あなたはテキストからデータを抽出してJSON形式で返すAIです。診断や治療アドバイスは行いません。データ抽出に集中してください。",
+      generationConfig: {
+        temperature: 0.1,
+        responseMimeType: "application/json",
+      },
+    });
     const result = await model.generateContent(prompt);
     const responseText = result.response.text();
     const parsed = parseJsonSafe(responseText);
