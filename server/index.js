@@ -9,10 +9,19 @@ const DEMO_MODE = process.env.DEMO_MODE === "1" || !process.env.GOOGLE_CLOUD_PRO
 
 // --- Middleware ---
 app.use(cors({ origin: ALLOW_ORIGIN }));
-app.use(express.json());
+app.use(express.json({ limit: "15mb" }));
 
 // 静的ファイル配信（LIFF フロントエンド）
 app.use(express.static(path.join(__dirname, "../public")));
+
+// --- AI補助ルート（デモ/本番どちらでも動作） ---
+try {
+  const aiRoutes = require("./routes/ai");
+  app.use("/api/ai", aiRoutes);
+  console.log("AI routes loaded");
+} catch (err) {
+  console.warn("AI routes not loaded:", err.message);
+}
 
 if (DEMO_MODE) {
   // --- デモモード: Firestore不要、サンプルデータで動作 ---

@@ -37,6 +37,11 @@
       <div class="form-group"><label class="form-label">終了日（服用中なら空欄）</label><input type="date" class="form-input" id="med-end"></div>
       <div class="form-group"><label class="form-label">変更理由</label><input type="text" class="form-input" id="med-reason"></div>
       <div class="form-group"><label class="form-label">メモ</label><textarea class="form-textarea" id="med-notes"></textarea></div>
+      <div class="form-group">
+        <label class="form-label">写真（お薬手帳のページなど・任意）</label>
+        <div id="photo-preview-wrap"></div>
+        <button type="button" class="btn btn-outline" id="btn-photo" style="font-size:13px;padding:10px;">📷 写真を添付</button>
+      </div>
       <button type="submit" class="btn btn-primary" id="submit-btn">追加する</button>
       <div id="delete-section" class="hidden mt-16"><button type="button" class="btn btn-danger" id="delete-btn">このおくすりを削除</button></div>
     </form>
@@ -44,11 +49,26 @@
 
   <script src="https://static.line-scdn.net/liff/edge/2/sdk.js" defer></script>
   <script src="/js/liff-init.js"></script>
+  <script src="/js/photo-upload.js"></script>
   <script>
     const params = new URLSearchParams(location.search);
     const medId = params.get("id");
     const isEditMode = !!medId;
     let masterData = null;
+    let attachedPhoto = null;
+
+    function renderPhotoPreview() {
+      const wrap = document.getElementById("photo-preview-wrap");
+      if (attachedPhoto) {
+        wrap.innerHTML = `<div style="position:relative;display:inline-block;margin-bottom:8px;">
+          <img src="${attachedPhoto}" style="max-width:100%;max-height:200px;border-radius:8px;">
+          <button type="button" onclick="removePhoto()" style="position:absolute;top:4px;right:4px;background:rgba(0,0,0,0.6);color:#fff;border:none;border-radius:50%;width:28px;height:28px;cursor:pointer;">&times;</button>
+        </div>`;
+      } else {
+        wrap.innerHTML = "";
+      }
+    }
+    function removePhoto() { attachedPhoto = null; renderPhotoPreview(); }
 
     document.addEventListener("DOMContentLoaded", async () => {
       try {
@@ -74,6 +94,12 @@
           document.getElementById("master-section").classList.add("hidden");
           await loadMedication();
         }
+
+        document.getElementById("btn-photo").addEventListener("click", () => {
+          showPhotoPicker({
+            onSelect: (dataUri) => { attachedPhoto = dataUri; renderPhotoPreview(); },
+          });
+        });
       } catch (err) { console.error("Init error:", err); }
     });
 
@@ -133,6 +159,7 @@
       document.getElementById("med-end").value = med.endDate || "";
       document.getElementById("med-reason").value = med.changeReason || "";
       document.getElementById("med-notes").value = med.sideNotes || "";
+      if (med.photoUrl) { attachedPhoto = med.photoUrl; renderPhotoPreview(); }
     }
 
     document.getElementById("med-form").addEventListener("submit", async (e) => {
@@ -144,6 +171,7 @@
         category: document.getElementById("med-category").value, dosageForm: document.getElementById("med-form-type").value,
         startDate: document.getElementById("med-start").value, endDate: document.getElementById("med-end").value || null,
         changeReason: document.getElementById("med-reason").value, sideNotes: document.getElementById("med-notes").value,
+        photoUrl: attachedPhoto,
       };
       try {
         if (isEditMode) await apiPut(`/api/medications/${medId}`, data); else await apiPost("/api/medications", data);

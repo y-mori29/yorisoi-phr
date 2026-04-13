@@ -38,6 +38,13 @@
   </div>
 
   <div class="content">
+    <!-- AI入力補助 -->
+    <div class="card" style="background:linear-gradient(135deg,#fef3c7,#fde68a);border:none;">
+      <div style="font-size:12px;color:#92400e;font-weight:600;margin-bottom:8px;">⚡ かんたん入力</div>
+      <button class="btn btn-outline" id="btn-scan-lab" style="padding:10px;font-size:13px;">📋 検査結果の写真から読み取り</button>
+      <p style="font-size:10px;color:#92400e;margin-top:8px;opacity:0.8;">AIは写真から数値を転記するだけです。診断ではありません。</p>
+    </div>
+
     <div id="lab-container">
       <div class="loading"><div class="loading-spinner"></div><p class="mt-8 text-sm text-muted">読み込み中...</p></div>
     </div>
@@ -65,6 +72,7 @@
 
   <script src="https://static.line-scdn.net/liff/edge/2/sdk.js" defer></script>
   <script src="/js/liff-init.js"></script>
+  <script src="/js/photo-upload.js"></script>
   <script>
     let labConfig = [];
     let labResults = [];
@@ -75,12 +83,42 @@
         labConfig = template.labConfig?.items || [];
         labResults = await apiGet("/api/labs");
         renderLabs();
+        document.getElementById("btn-scan-lab").addEventListener("click", scanLabPhoto);
       } catch (err) {
         console.error("Load error:", err);
         document.getElementById("lab-container").innerHTML =
           '<p class="text-sm" style="color:var(--danger)">読み込みに失敗しました</p>';
       }
     });
+
+    function scanLabPhoto() {
+      showPhotoPicker({
+        onSelect: async (dataUri) => {
+          // プレビューで読み取り中を表示
+          showAddForm();
+          const submitBtn = document.querySelector("#lab-form button[type=submit]");
+          submitBtn.disabled = true;
+          submitBtn.textContent = "AI読み取り中...";
+          try {
+            const res = await apiPost("/api/ai/scan-lab", { image: dataUri, diseaseId: getDiseaseId() });
+            // 日付を入れる
+            if (res.date) document.getElementById("lab-date").value = res.date;
+            // 数値をフォームに反映
+            let count = 0;
+            Object.keys(res.values || {}).forEach((id) => {
+              const input = document.getElementById(`lab-val-${id}`);
+              if (input) { input.value = res.values[id]; count++; }
+            });
+            alert(`${count}項目を読み取りました。確認して保存してください。`);
+          } catch (err) {
+            alert("読み取りに失敗しました: " + err.message);
+          } finally {
+            submitBtn.disabled = false;
+            submitBtn.textContent = "保存する";
+          }
+        },
+      });
+    }
 
     function renderLabs() {
       const container = document.getElementById("lab-container");

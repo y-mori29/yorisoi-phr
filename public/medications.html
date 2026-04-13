@@ -19,6 +19,13 @@
   </div>
 
   <div class="content">
+    <!-- AI入力補助 -->
+    <div class="card" style="background:linear-gradient(135deg,#fef3c7,#fde68a);border:none;">
+      <div style="font-size:12px;color:#92400e;font-weight:600;margin-bottom:8px;">⚡ かんたん登録</div>
+      <button class="btn btn-outline" id="btn-scan-medbook" style="padding:10px;font-size:13px;">📖 お薬手帳から一括追加</button>
+      <p style="font-size:10px;color:#92400e;margin-top:8px;opacity:0.8;">AIは写真から薬名を転記するだけです。診断ではありません。</p>
+    </div>
+
     <div id="meds-container">
       <div class="loading"><div class="loading-spinner"></div><p class="mt-8 text-sm text-muted">読み込み中...</p></div>
     </div>
@@ -26,10 +33,26 @@
 
   <button class="fab" onclick="location.href='/medication-edit.html'" title="おくすり追加">+</button>
 
+  <!-- スキャン結果確認モーダル -->
+  <div id="scan-overlay" class="hidden" style="position:fixed;inset:0;background:rgba(0,0,0,0.5);z-index:300;display:flex;align-items:flex-end;justify-content:center;">
+    <div style="background:var(--white);border-radius:var(--radius) var(--radius) 0 0;padding:20px;width:100%;max-width:430px;max-height:85vh;overflow-y:auto;">
+      <div class="flex-between mb-8">
+        <h2 style="font-size:17px;font-weight:700;">スキャン結果を確認</h2>
+        <button style="background:none;border:none;font-size:20px;cursor:pointer;color:var(--gray-400);" onclick="closeScanOverlay()">&times;</button>
+      </div>
+      <p class="text-sm text-muted mb-8">AIが写真から読み取った薬のリストです。内容を確認してから追加してください。</p>
+      <div id="scan-results"></div>
+      <button class="btn btn-primary" id="scan-confirm-btn">この内容で追加する</button>
+      <button class="btn" id="scan-cancel-btn" style="background:none;color:var(--gray-500);margin-top:8px;">キャンセル</button>
+    </div>
+  </div>
+
   <script src="https://static.line-scdn.net/liff/edge/2/sdk.js" defer></script>
   <script src="/js/liff-init.js"></script>
+  <script src="/js/photo-upload.js"></script>
   <script>
     let medCatLabels = {};
+    let scannedMedications = [];
 
     document.addEventListener("DOMContentLoaded", async () => {
       try {
@@ -39,11 +62,108 @@
 
         const meds = await apiGet("/api/medications");
         renderMedications(meds);
+
+        setupScanButton();
       } catch (err) {
         console.error("Meds load error:", err);
         document.getElementById("meds-container").innerHTML = '<p class="text-sm" style="color:var(--danger)">読み込みに失敗しました</p>';
       }
     });
+
+    function setupScanButton() {
+      document.getElementById("btn-scan-medbook").addEventListener("click", () => {
+        showPhotoPicker({
+          onSelect: async (dataUri) => {
+            try {
+              showScanProcessing();
+              const res = await apiPost("/api/ai/scan-medication", { image: dataUri, diseaseId: getDiseaseId() });
+              renderScanResults(res.medications || []);
+            } catch (err) {
+              alert("読み取りに失敗しました: " + err.message);
+              closeScanOverlay();
+            }
+          },
+        });
+      });
+      document.getElementById("scan-cancel-btn").addEventListener("click", closeScanOverlay);
+      document.getElementById("scan-confirm-btn").addEventListener("click", confirmScanResults);
+    }
+
+    function showScanProcessing() {
+      const overlay = document.getElementById("scan-overlay");
+      overlay.classList.remove("hidden");
+      document.getElementById("scan-results").innerHTML = '<div class="loading"><div class="loading-spinner"></div><p class="mt-8 text-sm text-muted">お薬手帳を読み取り中...</p></div>';
+      document.getElementById("scan-confirm-btn").disabled = true;
+    }
+
+    function renderScanResults(medications) {
+      scannedMedications = medications;
+      const container = document.getElementById("scan-results");
+      if (medications.length === 0) {
+        container.innerHTML = '<p class="text-sm text-muted">薬が見つかりませんでした。別の写真を試すか、手動で追加してください。</p>';
+        document.getElementById("scan-confirm-btn").disabled = true;
+        return;
+      }
+      let html = '';
+      medications.forEach((m, i) => {
+        const catLabel = medCatLabels[m.category] || m.category || "その他";
+        const matchBadge = m.matchedInMaster ? '<span class="badge" style="background:#d1fae5;color:#065f46;">マスタ一致</span>' : '<span class="badge" style="background:#fef3c7;color:#92400e;">要確認</span>';
+        html += `
+          <div class="card" style="padding:12px;">
+            <div class="flex-between">
+              <div style="font-weight:700;font-size:15px;">${escapeHtml(m.brandName || "（不明）")}</div>
+              ${matchBadge}
+            </div>
+            ${m.genericName ? `<div class="text-sm text-muted">${escapeHtml(m.genericName)}</div>` : ""}
+            ${m.dosage ? `<div class="text-sm">用量: ${escapeHtml(m.dosage)}</div>` : ""}
+            ${m.frequency ? `<div class="text-sm">用法: ${escapeHtml(m.frequency)}</div>` : ""}
+            <div class="text-sm text-muted mt-8">カテゴリ: ${catLabel}</div>
+            <label style="display:flex;align-items:center;gap:6px;margin-top:8px;font-size:13px;">
+              <input type="checkbox" checked data-idx="${i}" class="scan-include">
+              <span>この薬を追加</span>
+            </label>
+          </div>`;
+      });
+      container.innerHTML = html;
+      document.getElementById("scan-confirm-btn").disabled = false;
+    }
+
+    async function confirmScanResults() {
+      const checks = document.querySelectorAll(".scan-include:checked");
+      if (checks.length === 0) { closeScanOverlay(); return; }
+      const btn = document.getElementById("scan-confirm-btn");
+      btn.disabled = true;
+      btn.textContent = "追加中...";
+      const today = new Date().toISOString().slice(0, 10);
+      let successCount = 0;
+      for (const cb of checks) {
+        const med = scannedMedications[parseInt(cb.dataset.idx)];
+        try {
+          await apiPost("/api/medications", {
+            name: med.brandName || "",
+            genericName: med.genericName || "",
+            category: med.category || "other",
+            dosageForm: "経口",
+            startDate: med.startDate || today,
+            endDate: null,
+            changeReason: "お薬手帳から登録",
+            sideNotes: [med.dosage, med.frequency].filter(Boolean).join(" / "),
+          });
+          successCount++;
+        } catch (e) {
+          console.warn("Failed to add:", med.brandName, e);
+        }
+      }
+      closeScanOverlay();
+      alert(`${successCount}件のおくすりを追加しました`);
+      location.reload();
+    }
+
+    function closeScanOverlay() {
+      document.getElementById("scan-overlay").classList.add("hidden");
+      document.getElementById("scan-confirm-btn").disabled = false;
+      document.getElementById("scan-confirm-btn").textContent = "この内容で追加する";
+    }
 
     function renderMedications(meds) {
       const container = document.getElementById("meds-container");

@@ -45,6 +45,19 @@
   </div>
 
   <div class="content">
+    <!-- AI入力補助ボタン群 -->
+    <div class="card" style="background:linear-gradient(135deg,#fef3c7,#fde68a);border:none;">
+      <div style="font-size:12px;color:#92400e;font-weight:600;margin-bottom:8px;">⚡ かんたん入力</div>
+      <div style="display:grid;grid-template-columns:1fr 1fr;gap:8px;">
+        <button class="btn btn-outline" id="btn-voice" style="padding:10px;font-size:13px;width:auto;">🎙 音声で記録</button>
+        <button class="btn btn-outline" id="btn-chat" style="padding:10px;font-size:13px;width:auto;">💬 AIと会話</button>
+      </div>
+      <div id="btn-cgm-wrap" class="hidden mt-8">
+        <button class="btn btn-outline" id="btn-cgm" style="padding:10px;font-size:13px;">📱 CGMレポートから読み取り</button>
+      </div>
+      <p style="font-size:10px;color:#92400e;margin-top:8px;opacity:0.8;">AIは入力を手伝うだけです。診断ではありません。</p>
+    </div>
+
     <div id="metrics-container">
       <div class="loading"><div class="loading-spinner"></div><p class="mt-8 text-sm text-muted">読み込み中...</p></div>
     </div>
@@ -61,6 +74,18 @@
     </div>
   </div>
 
+  <!-- 音声入力オーバーレイ -->
+  <div id="voice-overlay" class="hidden" style="position:fixed;inset:0;background:rgba(0,0,0,0.6);z-index:300;display:flex;align-items:center;justify-content:center;">
+    <div style="background:var(--white);border-radius:var(--radius);padding:32px 24px;max-width:340px;width:90%;text-align:center;">
+      <div id="voice-mic" style="width:80px;height:80px;border-radius:50%;background:var(--brand-500);color:#fff;font-size:36px;display:flex;align-items:center;justify-content:center;margin:0 auto 16px;animation:pulse 1.5s infinite;">🎙</div>
+      <div id="voice-status" style="font-size:14px;color:var(--gray-600);margin-bottom:12px;">話してください...</div>
+      <div id="voice-text" style="background:var(--gray-50);padding:12px;border-radius:8px;min-height:60px;font-size:14px;text-align:left;margin-bottom:16px;"></div>
+      <button class="btn btn-primary" id="voice-stop">話し終わった</button>
+      <button class="btn" id="voice-cancel" style="background:none;color:var(--gray-500);margin-top:8px;">キャンセル</button>
+    </div>
+  </div>
+  <style>@keyframes pulse{0%,100%{transform:scale(1);opacity:1}50%{transform:scale(1.1);opacity:0.8}}</style>
+
   <div class="done-overlay hidden" id="done-overlay">
     <div class="done-card">
       <div style="font-size:48px; margin-bottom:12px">&#9989;</div>
@@ -71,18 +96,28 @@
 
   <script src="https://static.line-scdn.net/liff/edge/2/sdk.js" defer></script>
   <script src="/js/liff-init.js"></script>
+  <script src="/js/voice-input.js"></script>
+  <script src="/js/photo-upload.js"></script>
+  <script src="/js/ai-chat.js"></script>
   <script>
     const params = new URLSearchParams(location.search);
     const targetDate = params.get("date") || new Date().toISOString().slice(0, 10);
     let metricValues = {};
+    let currentTemplate = null;
 
     document.addEventListener("DOMContentLoaded", async () => {
       try {
         const { template } = await initLiff();
+        currentTemplate = template;
         document.getElementById("page-title").textContent = formatDate(targetDate) + " の記録";
 
         // テンプレートからメトリクスUIを動的生成
         renderMetrics(template.symptomConfig?.metrics || []);
+
+        // T1Dの場合はCGMボタンを表示
+        if (template.id === "t1d") {
+          document.getElementById("btn-cgm-wrap").classList.remove("hidden");
+        }
 
         // 既存データ読み込み
         try {
@@ -92,10 +127,130 @@
         } catch (e) { console.warn("Load error:", e.message); }
 
         setupSaveDelete();
+        setupAIButtons();
       } catch (err) {
         console.error("Init error:", err);
       }
     });
+
+    // === AIボタンのセットアップ ===
+    function setupAIButtons() {
+      // 音声入力
+      document.getElementById("btn-voice").addEventListener("click", startVoiceInput);
+      // チャット
+      document.getElementById("btn-chat").addEventListener("click", startChat);
+      // CGM
+      const cgmBtn = document.getElementById("btn-cgm");
+      if (cgmBtn) cgmBtn.addEventListener("click", startCGMScan);
+    }
+
+    function startVoiceInput() {
+      if (!VoiceInput.isSupported()) {
+        alert("このブラウザは音声入力に対応していません。Chrome/Safariでお試しください。");
+        return;
+      }
+      const overlay = document.getElementById("voice-overlay");
+      const textEl = document.getElementById("voice-text");
+      const statusEl = document.getElementById("voice-status");
+      textEl.textContent = "";
+      overlay.classList.remove("hidden");
+
+      const vi = new VoiceInput({
+        onInterim: (interim, finalText) => { textEl.textContent = finalText + interim; },
+        onFinal: async (finalText) => {
+          if (!finalText.trim()) {
+            overlay.classList.add("hidden");
+            return;
+          }
+          statusEl.textContent = "AIが内容を整理しています...";
+          try {
+            const res = await apiPost("/api/ai/parse-symptom", { text: finalText, diseaseId: getDiseaseId() });
+            overlay.classList.add("hidden");
+            applyAIResult(res.result, finalText);
+          } catch (err) {
+            alert("解析に失敗しました: " + err.message);
+            overlay.classList.add("hidden");
+          }
+        },
+        onError: (err) => {
+          alert("音声エラー: " + err.message);
+          overlay.classList.add("hidden");
+        },
+      });
+
+      document.getElementById("voice-stop").onclick = () => vi.stop();
+      document.getElementById("voice-cancel").onclick = () => {
+        vi.stop();
+        overlay.classList.add("hidden");
+      };
+      vi.start();
+    }
+
+    function startChat() {
+      showChatOverlay({
+        diseaseId: getDiseaseId(),
+        onComplete: (collected) => {
+          applyAIResult(collected, null);
+        },
+      });
+    }
+
+    async function startCGMScan() {
+      showPhotoPicker({
+        onSelect: async (dataUri) => {
+          try {
+            showToast("CGMレポートを読み取り中...");
+            const res = await apiPost("/api/ai/scan-cgm", { image: dataUri });
+            hideToast();
+            applyAIResult(res.values, null);
+            showToast("読み取り完了", 2000);
+          } catch (err) {
+            hideToast();
+            alert("読み取りに失敗しました: " + err.message);
+          }
+        },
+      });
+    }
+
+    function applyAIResult(result, memoText) {
+      if (!result) return;
+      const metrics = currentTemplate?.symptomConfig?.metrics || [];
+      let appliedCount = 0;
+      metrics.forEach((m) => {
+        if (result[m.id] != null) {
+          metricValues[m.id] = result[m.id];
+          if (m.type === "counter") {
+            const el = document.getElementById(`val-${m.id}`);
+            if (el) el.textContent = result[m.id];
+          } else if (m.type === "scale") {
+            selectScale(m.id, result[m.id]);
+          } else if (m.type === "toggle") {
+            const cb = document.getElementById(`toggle-${m.id}`);
+            if (cb) { cb.checked = !!result[m.id]; cb.dispatchEvent(new Event("change")); }
+          }
+          appliedCount++;
+        }
+      });
+      if (memoText || result.memo) {
+        const memoEl = document.getElementById("memo");
+        memoEl.value = result.memo || memoText || "";
+      }
+      showToast(`${appliedCount}項目をプレ入力しました。確認して保存してください`, 3500);
+    }
+
+    // シンプルなトースト
+    let toastEl = null;
+    function showToast(msg, duration = 0) {
+      if (!toastEl) {
+        toastEl = document.createElement("div");
+        toastEl.style.cssText = "position:fixed;top:70px;left:50%;transform:translateX(-50%);background:rgba(0,0,0,0.85);color:#fff;padding:10px 20px;border-radius:20px;font-size:13px;z-index:500;";
+        document.body.appendChild(toastEl);
+      }
+      toastEl.textContent = msg;
+      toastEl.style.display = "block";
+      if (duration > 0) setTimeout(hideToast, duration);
+    }
+    function hideToast() { if (toastEl) toastEl.style.display = "none"; }
 
     function renderMetrics(metrics) {
       const container = document.getElementById("metrics-container");
