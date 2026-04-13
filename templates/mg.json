@@ -4,16 +4,16 @@
   "shortName": "MG",
   "description": "重症筋無力症（Myasthenia Gravis）の治療歴・薬・症状を管理",
   "color": "#0891b2",
-  "icon": "💪",
+  "icon": "accessibility_new",
 
   "modules": [
-    { "id": "timeline", "label": "治療タイムライン", "description": "治療経歴を時系列で管理", "icon": "📅", "page": "timeline.html", "enabled": true, "core": true },
-    { "id": "medications", "label": "おくすり管理", "description": "処方薬と変更履歴", "icon": "💊", "page": "medications.html", "enabled": true, "core": true },
-    { "id": "symptom-log", "label": "症状きろく", "description": "筋力低下・日内変動を記録", "icon": "📝", "page": "symptom-log.html", "enabled": true },
-    { "id": "restroom", "label": "トイレさがし", "description": "近くのトイレをマップで表示", "icon": "🚾", "page": "restroom.html", "enabled": false },
-    { "id": "emergency-card", "label": "緊急カード", "description": "救急時に見せる情報カード", "icon": "🆘", "page": "emergency-card.html", "enabled": true, "core": true },
-    { "id": "lab-tracker", "label": "検査値きろく", "description": "血液検査の推移をグラフ表示", "icon": "🔬", "page": "lab-tracker.html", "enabled": true, "core": true },
-    { "id": "summary", "label": "診察用サマリー", "description": "診察時に医師に見せる画面", "icon": "📋", "page": "summary.html", "enabled": true, "core": true, "fullWidth": true }
+    { "id": "timeline", "label": "治療タイムライン", "description": "治療経歴を時系列で管理", "icon": "timeline", "page": "timeline.html", "enabled": true, "core": true },
+    { "id": "medications", "label": "おくすり管理", "description": "処方薬と変更履歴", "icon": "medication", "page": "medications.html", "enabled": true, "core": true },
+    { "id": "symptom-log", "label": "症状きろく", "description": "筋力低下・日内変動を記録", "icon": "edit_note", "page": "symptom-log.html", "enabled": true },
+    { "id": "restroom", "label": "トイレさがし", "description": "近くのトイレをマップで表示", "icon": "wc", "page": "restroom.html", "enabled": false },
+    { "id": "emergency-card", "label": "緊急カード", "description": "救急時に見せる情報カード", "icon": "emergency", "page": "emergency-card.html", "enabled": true, "core": true },
+    { "id": "lab-tracker", "label": "検査値きろく", "description": "血液検査の推移をグラフ表示", "icon": "science", "page": "lab-tracker.html", "enabled": true, "core": true },
+    { "id": "summary", "label": "診察用サマリー", "description": "診察時に医師に見せる画面", "icon": "description", "page": "summary.html", "enabled": true, "core": true, "fullWidth": true }
   ],
 
   "medicationMaster": "mg-medications.json",
@@ -25,8 +25,9 @@
       { "id": "ptosis", "label": "眼瞼下垂（まぶたが下がる）", "type": "toggle" },
       { "id": "diplopia", "label": "複視（物が二重に見える）", "type": "toggle" },
       { "id": "dysphagia", "label": "嚥下困難（飲み込みづらい）", "type": "toggle" },
+      { "id": "mastication", "label": "咀嚼困難（噛みづらい）", "type": "toggle", "description": "MG-ADL球症状の重要項目" },
       { "id": "dysarthria", "label": "構音障害（話しづらい）", "type": "toggle" },
-      { "id": "dyspnea", "label": "呼吸困難", "type": "toggle", "dangerColor": true },
+      { "id": "dyspnea", "label": "呼吸困難", "type": "toggle", "dangerColor": true, "description": "クリーゼの徴候として緊急受診を検討" },
       { "id": "dailyFluctuation", "label": "日内変動の差", "type": "scale", "min": 0, "max": 5, "description": "朝と夕方の症状差" }
     ],
     "summaryMetrics": [
@@ -34,22 +35,32 @@
       { "id": "ptosis", "label": "眼瞼下垂日数", "aggregate": "countTrue" },
       { "id": "diplopia", "label": "複視日数", "aggregate": "countTrue" },
       { "id": "dysphagia", "label": "嚥下困難日数", "aggregate": "countTrue" },
+      { "id": "mastication", "label": "咀嚼困難日数", "aggregate": "countTrue" },
       { "id": "dyspnea", "label": "呼吸困難日数", "aggregate": "countTrue" }
     ]
   },
 
   "labConfig": {
     "items": [
-      { "id": "achr", "label": "抗AChR抗体", "unit": "nmol/L", "normalRange": [0, 0.2], "warnHigh": 0.5 },
+      { "id": "achr", "label": "抗AChR抗体", "unit": "nmol/L", "normalRange": [0, 0.2], "warnHigh": 0.5, "note": "≥0.2で陽性。2023年日本神経免疫学会 希釈法標準化手引き" },
       { "id": "musk", "label": "抗MuSK抗体", "unit": "nmol/L", "normalRange": [0, 0.05] },
       { "id": "ck", "label": "CK（クレアチンキナーゼ）", "unit": "U/L", "normalRange": [40, 200], "warnHigh": 300 },
       { "id": "tsh", "label": "甲状腺TSH", "unit": "μIU/mL", "normalRange": [0.4, 4.0] },
       { "id": "ft4", "label": "FT4", "unit": "ng/dL", "normalRange": [0.9, 1.7] },
       { "id": "wbc", "label": "白血球数", "unit": "/μL", "normalRange": [3500, 9000] },
       { "id": "lymph", "label": "リンパ球数", "unit": "/μL", "normalRange": [1000, 4000] },
-      { "id": "igg", "label": "IgG", "unit": "mg/dL", "normalRange": [870, 1700] }
+      { "id": "igg", "label": "IgG", "unit": "mg/dL", "normalRange": [870, 1700] },
+      { "id": "hbv_dna", "label": "HBV-DNA", "unit": "LogIU/mL", "normalRange": [0, 1.3], "note": "免疫抑制療法前必須" }
     ]
   },
+
+  "scoringTools": [
+    { "id": "mg_adl", "label": "MG-ADL", "range": "0-24", "note": "MG診療ガイドライン2022+2025追補で主要評価項目。患者記入可能" },
+    { "id": "qmg", "label": "QMG（Quantitative MG Score）", "range": "0-39", "note": "医師評価の定量的スコア" },
+    { "id": "mgc", "label": "MGC（MG Composite Scale）", "range": "0-50" },
+    { "id": "mg_qol15", "label": "MG-QOL15", "range": "0-60", "note": "QOL評価" },
+    { "id": "mgfa", "label": "MGFA臨床分類", "range": "Class I-V", "note": "I=眼筋型, II-IV=全身型, V=挿管" }
+  ],
 
   "emergencyConfig": {
     "title": "緊急情報カード",

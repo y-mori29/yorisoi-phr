@@ -1,6 +1,12 @@
 {
   "categories": [
     {
+      "id": "insulin_ultra_rapid",
+      "name": "超超速効型インスリン",
+      "description": "2020年以降の最新世代。食事開始後投与可",
+      "step": 1
+    },
+    {
       "id": "insulin_rapid",
       "name": "超速効型インスリン",
       "description": "食直前に投与。食後血糖の上昇を抑える",
@@ -31,6 +37,12 @@
       "step": 3
     },
     {
+      "id": "sglt2",
+      "name": "SGLT2阻害薬（1型適応）",
+      "description": "2018-2019年に1型適応取得。DKAリスクに注意",
+      "step": 3
+    },
+    {
       "id": "other",
       "name": "その他",
       "description": "グルカゴン製剤・補助薬など",
@@ -38,6 +50,20 @@
     }
   ],
   "medications": [
+    {
+      "genericName": "インスリンアスパルト（フィアスプ）",
+      "brandNames": ["フィアスプ"],
+      "category": "insulin_ultra_rapid",
+      "dosageForms": ["皮下注射", "ポンプ用"],
+      "notes": "2020年2月発売。食事開始後投与可能な超超速効型。ポンプ療法主流"
+    },
+    {
+      "genericName": "インスリンリスプロ（ルムジェブ）",
+      "brandNames": ["ルムジェブ"],
+      "category": "insulin_ultra_rapid",
+      "dosageForms": ["皮下注射", "ポンプ用"],
+      "notes": "2020年6月発売。食事開始後投与可能な超超速効型"
+    },
     {
       "genericName": "インスリンリスプロ",
       "brandNames": ["ヒューマログ"],
@@ -81,6 +107,13 @@
       "notes": "1日1〜2回投与"
     },
     {
+      "genericName": "インスリン イコデク",
+      "brandNames": ["アウィクリ"],
+      "category": "insulin_long",
+      "dosageForms": ["皮下注射"],
+      "notes": "★2024年6月承認・2025年1月発売。世界初の週1回投与の持効型インスリン。日本糖尿病学会 週1回持効型インスリンRecommendation発表済"
+    },
+    {
       "genericName": "二相性インスリンアスパルト",
       "brandNames": ["ノボラピッド30ミックス", "ノボラピッド50ミックス", "ノボラピッド70ミックス"],
       "category": "insulin_mixed",
@@ -102,14 +135,6 @@
       "dosageForms": ["CSII"],
       "mechanism": "Control-IQ テクノロジー",
       "notes": "Dexcom G7と連携。予測型低血糖防止＋自動補正ボーラス"
-    },
-    {
-      "genericName": "インスリンポンプ（Omnipod 5）",
-      "brandNames": ["Omnipod 5"],
-      "category": "pump",
-      "dosageForms": ["CSII"],
-      "mechanism": "チューブレスパッチポンプ（AID対応）",
-      "notes": "Dexcom G7と連携。チューブなしで装着可能"
     },
     {
       "genericName": "Dexcom G7",
@@ -156,6 +181,20 @@
       "category": "other",
       "dosageForms": ["経鼻"],
       "notes": "重症低血糖時の緊急投与。室温保存可。家族でも投与しやすい"
+    },
+    {
+      "genericName": "イプラグリフロジン",
+      "brandNames": ["スーグラ"],
+      "category": "sglt2",
+      "dosageForms": ["経口"],
+      "notes": "2018年に1型適応取得。インスリン併用。肥満傾向T1Dに限定使用・DKAリスク注意"
+    },
+    {
+      "genericName": "ダパグリフロジン",
+      "brandNames": ["フォシーガ"],
+      "category": "sglt2",
+      "dosageForms": ["経口"],
+      "notes": "2019年に1型適応取得。インスリン併用。DKAリスク注意"
     }
   ]
 }

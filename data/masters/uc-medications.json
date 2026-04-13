@@ -31,6 +31,12 @@
       "step": 4
     },
     {
+      "id": "s1p_modulator",
+      "name": "S1P受容体調節薬",
+      "description": "経口の新規作用機序薬",
+      "step": 4
+    },
+    {
       "id": "other",
       "name": "その他",
       "description": "血球成分除去療法・抗菌薬など",
@@ -135,11 +141,34 @@
     },
     {
       "genericName": "ミリキズマブ",
-      "brandNames": ["オンヴォー"],
+      "brandNames": ["オンボー", "オンヴォー"],
       "category": "biologic",
       "dosageForms": ["点滴", "皮下注射"],
-      "mechanism": "抗IL-23抗体",
-      "notes": "比較的新しい"
+      "mechanism": "抗IL-23p19抗体"
+    },
+    {
+      "genericName": "リサンキズマブ",
+      "brandNames": ["スキリージ"],
+      "category": "biologic",
+      "dosageForms": ["点滴", "皮下注射"],
+      "mechanism": "抗IL-23p19抗体",
+      "notes": "2024年6月UC適応追加"
+    },
+    {
+      "genericName": "グセルクマブ",
+      "brandNames": ["トレムフィア"],
+      "category": "biologic",
+      "dosageForms": ["点滴", "皮下注射"],
+      "mechanism": "抗IL-23p19抗体",
+      "notes": "2025年3月UC適応追加"
+    },
+    {
+      "genericName": "エトラシモド",
+      "brandNames": ["ベルスピティ"],
+      "category": "s1p_modulator",
+      "dosageForms": ["経口"],
+      "mechanism": "S1P受容体調節薬",
+      "notes": "2025年6月承認・9月発売。1日1回経口"
     },
     {
       "genericName": "トファシチニブ",

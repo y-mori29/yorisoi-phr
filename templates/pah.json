@@ -4,16 +4,16 @@
   "shortName": "PAH",
   "description": "肺動脈性肺高血圧症（Pulmonary Arterial Hypertension）の治療歴・薬・症状を管理",
   "color": "#0284c7",
-  "icon": "🫁",
+  "icon": "cardiology",
 
   "modules": [
-    { "id": "timeline", "label": "治療タイムライン", "description": "治療経歴を時系列で管理", "icon": "📅", "page": "timeline.html", "enabled": true, "core": true },
-    { "id": "medications", "label": "おくすり管理", "description": "処方薬と変更履歴", "icon": "💊", "page": "medications.html", "enabled": true, "core": true },
-    { "id": "symptom-log", "label": "症状きろく", "description": "息切れ・SpO2を記録", "icon": "📝", "page": "symptom-log.html", "enabled": true },
-    { "id": "restroom", "label": "トイレさがし", "description": "近くのトイレをマップで表示", "icon": "🚾", "page": "restroom.html", "enabled": false },
-    { "id": "emergency-card", "label": "緊急カード", "description": "救急時に見せる情報カード", "icon": "🆘", "page": "emergency-card.html", "enabled": true, "core": true },
-    { "id": "lab-tracker", "label": "検査値きろく", "description": "血液検査の推移をグラフ表示", "icon": "🔬", "page": "lab-tracker.html", "enabled": true, "core": true },
-    { "id": "summary", "label": "診察用サマリー", "description": "診察時に医師に見せる画面", "icon": "📋", "page": "summary.html", "enabled": true, "core": true, "fullWidth": true }
+    { "id": "timeline", "label": "治療タイムライン", "description": "治療経歴を時系列で管理", "icon": "timeline", "page": "timeline.html", "enabled": true, "core": true },
+    { "id": "medications", "label": "おくすり管理", "description": "処方薬と変更履歴", "icon": "medication", "page": "medications.html", "enabled": true, "core": true },
+    { "id": "symptom-log", "label": "症状きろく", "description": "息切れ・SpO2を記録", "icon": "edit_note", "page": "symptom-log.html", "enabled": true },
+    { "id": "restroom", "label": "トイレさがし", "description": "近くのトイレをマップで表示", "icon": "wc", "page": "restroom.html", "enabled": false },
+    { "id": "emergency-card", "label": "緊急カード", "description": "救急時に見せる情報カード", "icon": "emergency", "page": "emergency-card.html", "enabled": true, "core": true },
+    { "id": "lab-tracker", "label": "検査値きろく", "description": "血液検査の推移をグラフ表示", "icon": "science", "page": "lab-tracker.html", "enabled": true, "core": true },
+    { "id": "summary", "label": "診察用サマリー", "description": "診察時に医師に見せる画面", "icon": "description", "page": "summary.html", "enabled": true, "core": true, "fullWidth": true }
   ],
 
   "medicationMaster": "pah-medications.json",
@@ -21,28 +21,37 @@
   "symptomConfig": {
     "title": "症状きろく",
     "metrics": [
-      { "id": "dyspnea", "label": "息切れ（NYHA）", "type": "scale", "min": 0, "max": 4, "description": "0=なし ← → 4=安静時" },
+      { "id": "whoFc", "label": "WHO機能分類（WHO-FC）", "type": "scale", "min": 1, "max": 4, "labels": ["I", "II", "III", "IV"], "description": "I=無症状 II=軽労作息切れ III=軽労作息切れ/制限あり IV=安静時症状" },
+      { "id": "sixMwd", "label": "6分間歩行距離", "type": "counter", "min": 0, "max": 800, "default": 300, "unit": "m", "description": "リスク層別化: <165=高, 165-320=中高, 320-440=中低, >440=低" },
       { "id": "spo2", "label": "SpO2", "type": "counter", "min": 70, "max": 100, "default": 95, "unit": "%" },
-      { "id": "walkingCapacity", "label": "歩ける距離", "type": "scale", "min": 0, "max": 5, "labels": ["寝たきり", "屋内のみ", "100m", "500m", "1km", "制限なし"] },
       { "id": "edema", "label": "むくみ", "type": "scale", "min": 0, "max": 3, "labels": ["なし", "軽度", "中等度", "高度"] },
       { "id": "chestPain", "label": "胸痛", "type": "toggle" },
-      { "id": "syncope", "label": "失神・前兆", "type": "toggle", "dangerColor": true },
+      { "id": "syncope", "label": "失神・前兆", "type": "toggle", "dangerColor": true, "description": "緊急受診を検討" },
       { "id": "palpitation", "label": "動悸", "type": "toggle" },
+      { "id": "fever", "label": "発熱", "type": "toggle", "dangerColor": true, "description": "フローラン持続静注使用時はCRBSIを疑う" },
       { "id": "fatigue", "label": "疲労感", "type": "scale", "min": 0, "max": 5 }
     ],
     "summaryMetrics": [
-      { "id": "dyspnea", "label": "平均息切れ", "aggregate": "avg" },
+      { "id": "whoFc", "label": "平均WHO-FC", "aggregate": "avg" },
+      { "id": "sixMwd", "label": "平均6MWD(m)", "aggregate": "avg" },
       { "id": "spo2", "label": "平均SpO2", "aggregate": "avg" },
-      { "id": "walkingCapacity", "label": "平均歩行", "aggregate": "avg" },
       { "id": "edema", "label": "平均むくみ", "aggregate": "avg" },
-      { "id": "syncope", "label": "失神日数", "aggregate": "countTrue" }
+      { "id": "syncope", "label": "失神日数", "aggregate": "countTrue" },
+      { "id": "fever", "label": "発熱日数", "aggregate": "countTrue" }
     ]
   },
 
   "labConfig": {
     "items": [
-      { "id": "bnp", "label": "BNP", "unit": "pg/mL", "normalRange": [0, 18.4], "warnHigh": 100 },
+      { "id": "bnp", "label": "BNP", "unit": "pg/mL", "normalRange": [0, 18.4], "warnHigh": 100, "note": "予後予測・リスク層別化の中核指標" },
       { "id": "ntprobnp", "label": "NT-proBNP", "unit": "pg/mL", "normalRange": [0, 125], "warnHigh": 300 },
+      { "id": "troponin", "label": "高感度トロポニン", "unit": "ng/L", "normalRange": [0, 14], "warnHigh": 50, "note": "右心負荷による心筋虚血の評価" },
+      { "id": "svo2", "label": "SvO2（混合静脈血酸素飽和度）", "unit": "%", "normalRange": [70, 80], "warnLow": 60, "note": "予後と最強相関。<60%で全身酸素需給破綻" },
+      { "id": "mpap", "label": "mPAP（平均肺動脈圧）", "unit": "mmHg", "normalRange": [10, 20], "warnHigh": 20, "note": "RHC時。≥20mmHgでPAH診断（ESC/ERS 2022）" },
+      { "id": "pvr", "label": "PVR（肺血管抵抗）", "unit": "WU", "normalRange": [0, 2], "warnHigh": 2, "note": "RHC時。>2WUでPAH診断" },
+      { "id": "pawp", "label": "PAWP（肺動脈楔入圧）", "unit": "mmHg", "normalRange": [0, 15], "warnHigh": 15, "note": "RHC時。≤15mmHgで前毛細血管性" },
+      { "id": "ci", "label": "CI（心係数）", "unit": "L/min/m²", "normalRange": [2.5, 4.0], "warnLow": 2.0, "note": "リスク層別化: ≥2.5=低, 2.0-2.4=中, <2.0=高" },
+      { "id": "rap", "label": "RAP（右房圧）", "unit": "mmHg", "normalRange": [0, 8], "warnHigh": 14 },
       { "id": "egfr", "label": "eGFR", "unit": "mL/min", "normalRange": [60, 150], "warnLow": 45 },
       { "id": "cre", "label": "クレアチニン", "unit": "mg/dL", "normalRange": [0.5, 1.0], "warnHigh": 1.3 },
       { "id": "ast", "label": "AST", "unit": "U/L", "normalRange": [10, 40], "warnHigh": 80 },

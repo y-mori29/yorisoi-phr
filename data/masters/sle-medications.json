@@ -104,6 +104,14 @@
       "notes": "皮膚・関節症状に有効。帯状疱疹リスクに注意"
     },
     {
+      "genericName": "リツキシマブ",
+      "brandNames": ["リツキサン"],
+      "category": "biologic",
+      "dosageForms": ["点滴"],
+      "mechanism": "抗CD20抗体",
+      "notes": "2022年日本リウマチ学会ループス腎炎使用ステートメント"
+    },
+    {
       "genericName": "ボクロスポリン",
       "brandNames": ["ルプキネス"],
       "category": "immunosuppressant",
@@ -123,6 +131,13 @@
       "category": "nsaid",
       "dosageForms": ["経口"],
       "notes": "COX-2選択的阻害。消化管リスクが低い"
+    },
+    {
+      "genericName": "デノスマブ",
+      "brandNames": ["プラリア"],
+      "category": "other",
+      "dosageForms": ["皮下注射"],
+      "notes": "ステロイド性骨粗鬆症対策。6ヶ月ごと"
     }
   ]
 }

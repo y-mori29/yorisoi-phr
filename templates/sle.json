@@ -4,14 +4,14 @@
   "shortName": "SLE",
   "description": "全身性エリテマトーデス（SLE）の治療歴・薬・症状を管理",
   "color": "#ec4899",
-  "icon": "🩺",
+  "icon": "immunology",
 
   "modules": [
     {
       "id": "timeline",
       "label": "治療タイムライン",
       "description": "治療経歴を時系列で管理",
-      "icon": "📅",
+      "icon": "timeline",
       "page": "timeline.html",
       "enabled": true,
       "core": true
@@ -20,7 +20,7 @@
       "id": "medications",
       "label": "おくすり管理",
       "description": "処方薬と変更履歴",
-      "icon": "💊",
+      "icon": "medication",
       "page": "medications.html",
       "enabled": true,
       "core": true
@@ -29,7 +29,7 @@
       "id": "symptom-log",
       "label": "症状きろく",
       "description": "毎日の体調をかんたん記録",
-      "icon": "📝",
+      "icon": "edit_note",
       "page": "symptom-log.html",
       "enabled": true
     },
@@ -37,7 +37,7 @@
       "id": "restroom",
       "label": "トイレさがし",
       "description": "近くのトイレをマップで表示",
-      "icon": "🚾",
+      "icon": "wc",
       "page": "restroom.html",
       "enabled": false
     },
@@ -45,7 +45,7 @@
       "id": "emergency-card",
       "label": "緊急カード",
       "description": "救急時に見せる情報カード",
-      "icon": "🆘",
+      "icon": "emergency",
       "page": "emergency-card.html",
       "enabled": true,
       "core": true
@@ -54,7 +54,7 @@
       "id": "lab-tracker",
       "label": "検査値きろく",
       "description": "血液検査の推移をグラフ表示",
-      "icon": "🔬",
+      "icon": "science",
       "page": "lab-tracker.html",
       "enabled": true,
       "core": true
@@ -63,7 +63,7 @@
       "id": "summary",
       "label": "診察用サマリー",
       "description": "診察時に医師に見せる画面",
-      "icon": "📋",
+      "icon": "description",
       "page": "summary.html",
       "enabled": true,
       "core": true,
@@ -115,6 +115,13 @@
         "type": "toggle"
       },
       {
+        "id": "photosensitivity",
+        "label": "光線過敏（日光で悪化）",
+        "type": "toggle",
+        "dangerColor": true,
+        "description": "再燃のきっかけとして頻度が高い"
+      },
+      {
         "id": "edema",
         "label": "むくみ",
         "type": "scale",
@@ -129,6 +136,7 @@
       { "id": "jointPain", "label": "平均関節痛", "aggregate": "avg" },
       { "id": "rash", "label": "皮疹日数", "aggregate": "countTrue" },
       { "id": "fever", "label": "発熱日数", "aggregate": "countTrue" },
+      { "id": "photosensitivity", "label": "光線過敏日数", "aggregate": "countTrue" },
       { "id": "edema", "label": "平均むくみ", "aggregate": "avg" }
     ]
   },
@@ -136,18 +144,31 @@
   "labConfig": {
     "items": [
       { "id": "crp", "label": "CRP", "unit": "mg/dL", "normalRange": [0, 0.3], "warnHigh": 1.0 },
-      { "id": "anti_dsdna", "label": "抗dsDNA抗体", "unit": "IU/mL", "normalRange": [0, 12], "warnHigh": 30 },
-      { "id": "c3", "label": "補体C3", "unit": "mg/dL", "normalRange": [65, 135], "warnLow": 50 },
-      { "id": "c4", "label": "補体C4", "unit": "mg/dL", "normalRange": [13, 35], "warnLow": 10 },
+      { "id": "anti_dsdna", "label": "抗dsDNA抗体", "unit": "IU/mL", "normalRange": [0, 10], "warnHigh": 15, "note": "測定法（ELISA/RIA）で基準異なる・施設基準参照" },
+      { "id": "c3", "label": "補体C3", "unit": "mg/dL", "normalRange": [86, 160], "warnLow": 80 },
+      { "id": "c4", "label": "補体C4", "unit": "mg/dL", "normalRange": [17, 45], "warnLow": 15 },
+      { "id": "anti_sm", "label": "抗Sm抗体", "unit": "index", "normalRange": [0, 10], "note": "SLE特異性高・分類基準項目" },
+      { "id": "anti_u1rnp", "label": "抗U1-RNP抗体", "unit": "index", "normalRange": [0, 10], "note": "MCTDとの鑑別" },
+      { "id": "anti_ssa", "label": "抗Ro/SS-A抗体", "unit": "index", "normalRange": [0, 10], "note": "新生児ループス・胎児心ブロックリスク" },
+      { "id": "anti_ssb", "label": "抗La/SS-B抗体", "unit": "index", "normalRange": [0, 10] },
+      { "id": "anti_phospholipid", "label": "抗リン脂質抗体", "unit": "U/mL", "normalRange": [0, 10], "note": "抗カルジオリピン・LA・抗β2GPI。血栓リスク評価" },
       { "id": "egfr", "label": "eGFR", "unit": "mL/min/1.73m²", "normalRange": [60, 120], "warnLow": 45 },
-      { "id": "urine_protein", "label": "尿蛋白", "unit": "g/日", "normalRange": [0, 0.15], "warnHigh": 0.5 },
+      { "id": "upcr", "label": "UPCR（尿蛋白/Cr比）", "unit": "mg/gCr", "normalRange": [0, 150], "warnHigh": 500, "note": "随時尿で測定可・EULAR 2019で≥500が腎生検適応" },
+      { "id": "urine_sediment", "label": "尿沈渣（赤血球/円柱）", "unit": "/HPF", "normalRange": [0, 5], "note": "ループス腎炎活動性評価" },
+      { "id": "coombs", "label": "直接クームス試験", "unit": "結果", "note": "AIHA合併の評価" },
       { "id": "wbc", "label": "白血球数", "unit": "/μL", "normalRange": [3500, 9000], "warnLow": 2500 },
       { "id": "hb", "label": "Hb（ヘモグロビン）", "unit": "g/dL", "normalRange": [12, 17], "warnLow": 10 },
       { "id": "plt", "label": "血小板数", "unit": "万/μL", "normalRange": [15, 35], "warnLow": 10 },
-      { "id": "bun", "label": "BUN（尿素窒素）", "unit": "mg/dL", "normalRange": [8, 20], "warnHigh": 25 },
-      { "id": "cre", "label": "Cre（クレアチニン）", "unit": "mg/dL", "normalRange": [0.6, 1.1], "warnHigh": 1.5 }
+      { "id": "bun", "label": "BUN", "unit": "mg/dL", "normalRange": [8, 20], "warnHigh": 25 },
+      { "id": "cre", "label": "Cre", "unit": "mg/dL", "normalRange": [0.6, 1.1], "warnHigh": 1.5 },
+      { "id": "hbv_dna", "label": "HBV-DNA", "unit": "LogIU/mL", "normalRange": [0, 1.3], "note": "免疫抑制療法前必須" }
     ]
   },
+
+  "scoringTools": [
+    { "id": "sledai2k", "label": "SLEDAI-2K", "range": "0-105", "note": "SLE疾患活動性指標。指定難病重症度判定にも使用。≥4で活動性" },
+    { "id": "bilag", "label": "BILAG-2004", "range": "A-E", "note": "臓器系統別の活動性評価" }
+  ],
 
   "emergencyConfig": {
     "title": "緊急情報カード",

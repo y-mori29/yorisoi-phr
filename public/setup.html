@@ -7,12 +7,11 @@
   <link rel="stylesheet" href="/css/style.css">
   <style>
     .setup-hero {
-      text-align: center; padding: 32px 20px 24px;
+      text-align: center; padding: 40px 20px 32px;
       background: linear-gradient(135deg, var(--brand-500), var(--brand-600));
       color: var(--white); margin: -16px -16px 20px; border-radius: 0 0 24px 24px;
     }
-    .setup-hero-icon { font-size: 48px; margin-bottom: 8px; }
-    .setup-hero h2 { font-size: 20px; font-weight: 700; margin-bottom: 4px; }
+    .setup-hero h2 { font-size: 22px; font-weight: 700; margin-bottom: 6px; letter-spacing: 0.5px; }
     .setup-hero p { font-size: 14px; opacity: 0.9; }
 
     .step-indicator { display: flex; justify-content: center; gap: 8px; margin-bottom: 20px; }
@@ -27,7 +26,9 @@
     }
     .disease-option:active { transform: scale(0.98); }
     .disease-option.selected { border-color: var(--brand-500); background: var(--brand-50); }
-    .disease-option-icon { font-size: 32px; flex-shrink: 0; }
+    .disease-option-icon { font-size: 32px; flex-shrink: 0; color: var(--brand-600); line-height: 1; width: 40px; height: 40px; display: flex; align-items: center; justify-content: center; }
+    .disease-option-icon .material-symbols-outlined { font-size: 32px; font-variation-settings: 'FILL' 0, 'wght' 400, 'GRAD' 0, 'opsz' 40; }
+    .disease-option.selected .disease-option-icon { color: var(--brand-700); }
     .disease-option-name { font-size: 16px; font-weight: 700; }
     .disease-option-desc { font-size: 12px; color: var(--gray-500); margin-top: 2px; }
     .disease-option-check { margin-left: auto; font-size: 20px; color: var(--brand-500); opacity: 0; transition: opacity 0.2s; }
@@ -41,7 +42,9 @@
     }
     .module-option.selected { border-color: var(--teal); background: #f0fdf9; }
     .module-option.core { border-color: var(--gray-100); background: var(--gray-50); cursor: default; }
-    .module-option-icon { font-size: 24px; flex-shrink: 0; }
+    .module-option-icon { font-size: 24px; flex-shrink: 0; color: var(--teal-dark); line-height: 1; width: 32px; display: flex; align-items: center; justify-content: center; }
+    .module-option-icon .material-symbols-outlined { font-size: 24px; }
+    .module-option.core .module-option-icon { color: var(--gray-400); }
     .module-option-name { font-size: 15px; font-weight: 600; flex: 1; }
     .module-option-desc { font-size: 12px; color: var(--gray-500); }
     .module-option-toggle { width: 20px; height: 20px; border-radius: 4px; border: 2px solid var(--gray-300); flex-shrink: 0; display: flex; align-items: center; justify-content: center; }
@@ -57,7 +60,6 @@
     <!-- Step 1: 疾患選択 -->
     <div id="step1">
       <div class="setup-hero">
-        <div class="setup-hero-icon">&#128139;</div>
         <h2>よりそい PHR</h2>
         <p>あなたの治療をサポートします</p>
       </div>
@@ -72,7 +74,6 @@
     <!-- Step 2: モジュール選択 -->
     <div id="step2" class="hidden">
       <div class="setup-hero" id="step2-hero">
-        <div class="setup-hero-icon">&#9881;</div>
         <h2>使う機能を選ぶ</h2>
         <p>必要な機能だけを選んでカスタマイズ</p>
       </div>
@@ -113,7 +114,7 @@
       const container = document.getElementById("disease-list");
       container.innerHTML = allTemplates.map((t) => `
         <div class="disease-option" data-id="${t.id}" onclick="selectDisease('${t.id}')">
-          <div class="disease-option-icon">${t.icon}</div>
+          <div class="disease-option-icon"><span class="material-symbols-outlined">${t.icon}</span></div>
           <div>
             <div class="disease-option-name">${t.name}</div>
             <div class="disease-option-desc">${t.shortName}</div>
@@ -169,7 +170,7 @@
 
         return `
           <div class="${cls}" data-mod="${mod.id}" ${isCore ? "" : `onclick="toggleModule('${mod.id}')"`}>
-            <div class="module-option-icon">${mod.icon}</div>
+            <div class="module-option-icon"><span class="material-symbols-outlined">${mod.icon}</span></div>
             <div style="flex:1">
               <div class="module-option-name">${mod.label}${coreLabel}</div>
               <div class="module-option-desc">${mod.description}</div>

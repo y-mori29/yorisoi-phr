@@ -18,6 +18,7 @@
     { "genericName": "ナタリズマブ", "brandNames": ["タイサブリ"], "category": "dmt_infusion", "dosageForms": ["点滴"], "mechanism": "抗α4インテグリン抗体", "notes": "PMLリスク・JCV抗体測定必須" },
     { "genericName": "オクレリズマブ", "brandNames": ["オクレバス"], "category": "dmt_infusion", "dosageForms": ["点滴"], "mechanism": "抗CD20抗体" },
     { "genericName": "アレムツズマブ", "brandNames": ["レムトラーダ"], "category": "dmt_infusion", "dosageForms": ["点滴"], "mechanism": "抗CD52抗体" },
+    { "genericName": "オファツムマブ", "brandNames": ["ケシンプタ"], "category": "dmt_injection", "dosageForms": ["皮下注射"], "mechanism": "抗CD20抗体", "notes": "2021年3月日本承認・月1回自己注射可・在宅自己注射適用" },
     { "genericName": "メチルプレドニゾロン", "brandNames": ["ソル・メドロール"], "category": "steroid", "dosageForms": ["点滴"], "notes": "再発時パルス療法" },
     { "genericName": "プレドニゾロン", "brandNames": ["プレドニン"], "category": "steroid", "dosageForms": ["経口"] },
     { "genericName": "ファンピリジン", "brandNames": ["ファンピラ"], "category": "symptomatic", "dosageForms": ["経口"], "notes": "歩行改善" },

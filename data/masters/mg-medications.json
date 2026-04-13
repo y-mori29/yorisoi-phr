@@ -19,8 +19,9 @@
     { "genericName": "ミコフェノール酸モフェチル", "brandNames": ["セルセプト"], "category": "immunosuppressant", "dosageForms": ["経口"] },
     { "genericName": "エクリズマブ", "brandNames": ["ソリリス"], "category": "biologic", "dosageForms": ["点滴"], "mechanism": "抗C5補体抗体", "notes": "髄膜炎菌ワクチン接種必須" },
     { "genericName": "ラブリズマブ", "brandNames": ["ユルトミリス"], "category": "biologic", "dosageForms": ["点滴"], "mechanism": "長時間作用型抗C5抗体" },
-    { "genericName": "エフガルチギモド", "brandNames": ["ウィフガート"], "category": "biologic", "dosageForms": ["点滴", "皮下注射"], "mechanism": "FcRn阻害" },
-    { "genericName": "ロザノリキシズマブ", "brandNames": ["ライスティーゴ"], "category": "biologic", "dosageForms": ["皮下注射"], "mechanism": "FcRn阻害" },
+    { "genericName": "エフガルチギモド", "brandNames": ["ヴィブガート"], "category": "biologic", "dosageForms": ["点滴", "皮下注射"], "mechanism": "FcRn阻害", "notes": "2024年皮下注製剤承認" },
+    { "genericName": "ロザノリキシズマブ", "brandNames": ["リスティーゴ"], "category": "biologic", "dosageForms": ["皮下注射"], "mechanism": "FcRn阻害", "notes": "2023年11月同時承認" },
+    { "genericName": "ジルコプラン", "brandNames": ["ジルビスク"], "category": "biologic", "dosageForms": ["皮下注射"], "mechanism": "C5補体阻害ペプチド", "notes": "2023年9月承認・自己注射可" },
     { "genericName": "免疫グロブリン", "brandNames": ["献血ヴェノグロブリンIH"], "category": "ivig", "dosageForms": ["点滴"], "notes": "クリーゼ・周術期" },
     { "genericName": "血漿交換療法", "brandNames": ["PE/DFPP"], "category": "other", "dosageForms": ["処置"], "notes": "クリーゼ・ステロイド効果不十分時" }
   ]

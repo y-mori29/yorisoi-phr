@@ -4,16 +4,16 @@
   "shortName": "Fabry",
   "description": "ファブリー病（Fabry disease）の治療歴・薬・症状を管理",
   "color": "#db2777",
-  "icon": "🧬",
+  "icon": "biotech",
 
   "modules": [
-    { "id": "timeline", "label": "治療タイムライン", "description": "治療経歴を時系列で管理", "icon": "📅", "page": "timeline.html", "enabled": true, "core": true },
-    { "id": "medications", "label": "おくすり管理", "description": "処方薬と変更履歴", "icon": "💊", "page": "medications.html", "enabled": true, "core": true },
-    { "id": "symptom-log", "label": "症状きろく", "description": "全身症状をかんたん記録", "icon": "📝", "page": "symptom-log.html", "enabled": true },
-    { "id": "restroom", "label": "トイレさがし", "description": "近くのトイレをマップで表示", "icon": "🚾", "page": "restroom.html", "enabled": false },
-    { "id": "emergency-card", "label": "緊急カード", "description": "救急時に見せる情報カード", "icon": "🆘", "page": "emergency-card.html", "enabled": true, "core": true },
-    { "id": "lab-tracker", "label": "検査値きろく", "description": "血液検査の推移をグラフ表示", "icon": "🔬", "page": "lab-tracker.html", "enabled": true, "core": true },
-    { "id": "summary", "label": "診察用サマリー", "description": "診察時に医師に見せる画面", "icon": "📋", "page": "summary.html", "enabled": true, "core": true, "fullWidth": true }
+    { "id": "timeline", "label": "治療タイムライン", "description": "治療経歴を時系列で管理", "icon": "timeline", "page": "timeline.html", "enabled": true, "core": true },
+    { "id": "medications", "label": "おくすり管理", "description": "処方薬と変更履歴", "icon": "medication", "page": "medications.html", "enabled": true, "core": true },
+    { "id": "symptom-log", "label": "症状きろく", "description": "全身症状をかんたん記録", "icon": "edit_note", "page": "symptom-log.html", "enabled": true },
+    { "id": "restroom", "label": "トイレさがし", "description": "近くのトイレをマップで表示", "icon": "wc", "page": "restroom.html", "enabled": false },
+    { "id": "emergency-card", "label": "緊急カード", "description": "救急時に見せる情報カード", "icon": "emergency", "page": "emergency-card.html", "enabled": true, "core": true },
+    { "id": "lab-tracker", "label": "検査値きろく", "description": "血液検査の推移をグラフ表示", "icon": "science", "page": "lab-tracker.html", "enabled": true, "core": true },
+    { "id": "summary", "label": "診察用サマリー", "description": "診察時に医師に見せる画面", "icon": "description", "page": "summary.html", "enabled": true, "core": true, "fullWidth": true }
   ],
 
   "medicationMaster": "fabry-medications.json",
@@ -27,26 +27,33 @@
       { "id": "sweatIssue", "label": "発汗異常（無汗・低汗）", "type": "toggle" },
       { "id": "tinnitus", "label": "耳鳴り・難聴", "type": "toggle" },
       { "id": "dizziness", "label": "めまい", "type": "toggle" },
-      { "id": "ertSideEffect", "label": "ERT投与後の副反応", "type": "toggle", "dangerColor": true }
+      { "id": "orthostaticHypotension", "label": "立ちくらみ・失神", "type": "toggle", "description": "自律神経障害の評価" },
+      { "id": "infusionReaction", "label": "輸注関連反応（IRR）", "type": "toggle", "dangerColor": true, "description": "ERT投与中〜直後の発熱・悪寒・発疹" },
+      { "id": "ertSideEffect", "label": "ERT投与後の体調不良", "type": "toggle", "description": "投与翌日以降の遅延反応" }
     ],
     "summaryMetrics": [
       { "id": "extremityPain", "label": "平均疼痛", "aggregate": "avg" },
       { "id": "fatigue", "label": "平均疲労", "aggregate": "avg" },
       { "id": "gastrointestinal", "label": "消化器症状日数", "aggregate": "countTrue" },
+      { "id": "orthostaticHypotension", "label": "立ちくらみ日数", "aggregate": "countTrue" },
+      { "id": "infusionReaction", "label": "IRR日数", "aggregate": "countTrue" },
       { "id": "ertSideEffect", "label": "ERT副反応日数", "aggregate": "countTrue" }
     ]
   },
 
   "labConfig": {
     "items": [
-      { "id": "lysogb3", "label": "Lyso-Gb3", "unit": "ng/mL", "normalRange": [0, 1.8], "warnHigh": 5 },
-      { "id": "galA", "label": "α-ガラクトシダーゼA活性", "unit": "nmol/h/mg", "normalRange": [25, 100] },
+      { "id": "lysogb3", "label": "Lyso-Gb3（血漿）", "unit": "ng/mL", "normalRange": [0, 2.0], "warnHigh": 2.7, "note": "LC-MS/MS測定。正常<2.0、2.0以上で疾患疑い、>2.7で臓器障害リスク高（新潟大学/武田基準）" },
+      { "id": "galA", "label": "α-ガラクトシダーゼA活性", "unit": "nmol/h/mg", "normalRange": [25, 100], "warnLow": 4, "note": "男性で<4.0 nmol/h/mLは診断上の重要指標" },
+      { "id": "mulberry", "label": "尿中マルベリー小体", "unit": "/HPF", "normalRange": [0, 0], "note": "尿蛋白より早期に出現。ERT効果判定に有用（感度>82%・特異度>94%）" },
+      { "id": "uGb3", "label": "尿中Gb3", "unit": "μg/mmolCr", "normalRange": [0, 50], "note": "尿中に排泄される糖脂質" },
       { "id": "egfr", "label": "eGFR", "unit": "mL/min", "normalRange": [60, 150], "warnLow": 45 },
-      { "id": "uprot", "label": "尿蛋白", "unit": "g/gCr", "normalRange": [0, 0.15], "warnHigh": 0.5 },
+      { "id": "uprot", "label": "尿蛋白（UPCR）", "unit": "g/gCr", "normalRange": [0, 0.15], "warnHigh": 0.5 },
       { "id": "cre", "label": "クレアチニン", "unit": "mg/dL", "normalRange": [0.5, 1.0], "warnHigh": 1.3 },
       { "id": "bnp", "label": "BNP", "unit": "pg/mL", "normalRange": [0, 18.4], "warnHigh": 100 },
       { "id": "lvef", "label": "心エコー LVEF", "unit": "%", "normalRange": [55, 80], "warnLow": 40 },
-      { "id": "troponin", "label": "高感度トロポニン", "unit": "ng/L", "normalRange": [0, 14], "warnHigh": 50 }
+      { "id": "troponin", "label": "高感度トロポニン", "unit": "ng/L", "normalRange": [0, 14], "warnHigh": 50 },
+      { "id": "ada_igg", "label": "抗薬物抗体（IgG）", "unit": "結果", "note": "ERTの継続判断に影響。リプレガルでIgG陽性率39%" }
     ]
   },
 

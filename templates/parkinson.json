@@ -4,14 +4,14 @@
   "shortName": "PD",
   "description": "パーキンソン病（Parkinson's Disease）の治療歴・薬・症状を管理",
   "color": "#6366f1",
-  "icon": "🧠",
+  "icon": "neurology",
 
   "modules": [
     {
       "id": "timeline",
       "label": "治療タイムライン",
       "description": "治療経歴を時系列で管理",
-      "icon": "📅",
+      "icon": "timeline",
       "page": "timeline.html",
       "enabled": true,
       "core": true
@@ -20,7 +20,7 @@
       "id": "medications",
       "label": "おくすり管理",
       "description": "処方薬と変更履歴",
-      "icon": "💊",
+      "icon": "medication",
       "page": "medications.html",
       "enabled": true,
       "core": true
@@ -29,7 +29,7 @@
       "id": "symptom-log",
       "label": "症状きろく",
       "description": "毎日の体調をかんたん記録",
-      "icon": "📝",
+      "icon": "edit_note",
       "page": "symptom-log.html",
       "enabled": true
     },
@@ -37,7 +37,7 @@
       "id": "restroom",
       "label": "トイレさがし",
       "description": "近くのトイレをマップで表示",
-      "icon": "🚾",
+      "icon": "wc",
       "page": "restroom.html",
       "enabled": false
     },
@@ -45,7 +45,7 @@
       "id": "emergency-card",
       "label": "緊急カード",
       "description": "救急時に見せる情報カード",
-      "icon": "🆘",
+      "icon": "emergency",
       "page": "emergency-card.html",
       "enabled": true,
       "core": true
@@ -54,7 +54,7 @@
       "id": "lab-tracker",
       "label": "検査値きろく",
       "description": "血液検査の推移をグラフ表示",
-      "icon": "🔬",
+      "icon": "science",
       "page": "lab-tracker.html",
       "enabled": true,
       "core": true
@@ -63,7 +63,7 @@
       "id": "summary",
       "label": "診察用サマリー",
       "description": "診察時に医師に見せる画面",
-      "icon": "📋",
+      "icon": "description",
       "page": "summary.html",
       "enabled": true,
       "core": true,
@@ -120,6 +120,19 @@
         "unit": "回"
       },
       {
+        "id": "dyskinesia",
+        "label": "ジスキネジア（不随意運動）",
+        "type": "toggle",
+        "description": "薬が効きすぎている時間帯の評価"
+      },
+      {
+        "id": "hallucination",
+        "label": "幻視・幻覚",
+        "type": "toggle",
+        "dangerColor": true,
+        "description": "ドパミン作動薬副作用の早期発見"
+      },
+      {
         "id": "painScore",
         "label": "痛み",
         "type": "scale",
@@ -133,6 +146,8 @@
       { "id": "offTime", "label": "平均OFF時間/日", "aggregate": "avg" },
       { "id": "tremor", "label": "平均振戦スコア", "aggregate": "avg" },
       { "id": "freezing", "label": "すくみ足日数", "aggregate": "countTrue" },
+      { "id": "dyskinesia", "label": "ジスキネジア日数", "aggregate": "countTrue" },
+      { "id": "hallucination", "label": "幻視日数", "aggregate": "countTrue" },
       { "id": "fallCount", "label": "合計転倒回数", "aggregate": "sum" }
     ]
   },
@@ -147,6 +162,13 @@
       { "id": "ck", "label": "CK（クレアチンキナーゼ）", "unit": "U/L", "normalRange": [50, 230], "warnHigh": 500 }
     ]
   },
+
+  "scoringTools": [
+    { "id": "mds_updrs", "label": "MDS-UPDRS", "range": "Part I-IV", "note": "国際標準のPD評価。PartIV=運動合併症（ジスキネジア・ウェアリングオフ）" },
+    { "id": "hy_scale", "label": "Hoehn & Yahr重症度", "range": "Stage 0-5", "note": "modified版が標準" },
+    { "id": "ledd", "label": "LEDD（Levodopa Equivalent Daily Dose）", "unit": "mg/day", "note": "薬剤調整・デバイス療法適応判断の基準" },
+    { "id": "moca_j", "label": "MoCA-J", "range": "0-30", "note": "認知機能スクリーニング。≤25で認知機能障害疑い" }
+  ],
 
   "emergencyConfig": {
     "title": "緊急情報カード",

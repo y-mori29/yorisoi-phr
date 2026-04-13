@@ -4,14 +4,14 @@
   "shortName": "UC",
   "description": "潰瘍性大腸炎（Ulcerative Colitis）の治療歴・薬・症状を管理",
   "color": "#ee8b97",
-  "icon": "🩺",
+  "icon": "gastroenterology",
 
   "modules": [
     {
       "id": "timeline",
       "label": "治療タイムライン",
       "description": "治療経歴を時系列で管理",
-      "icon": "📅",
+      "icon": "timeline",
       "page": "timeline.html",
       "enabled": true,
       "core": true
@@ -20,7 +20,7 @@
       "id": "medications",
       "label": "おくすり管理",
       "description": "処方薬と変更履歴",
-      "icon": "💊",
+      "icon": "medication",
       "page": "medications.html",
       "enabled": true,
       "core": true
@@ -29,7 +29,7 @@
       "id": "symptom-log",
       "label": "症状きろく",
       "description": "毎日の体調をかんたん記録",
-      "icon": "📝",
+      "icon": "edit_note",
       "page": "symptom-log.html",
       "enabled": true
     },
@@ -37,7 +37,7 @@
       "id": "restroom",
       "label": "トイレさがし",
       "description": "近くのトイレをマップで表示",
-      "icon": "🚾",
+      "icon": "wc",
       "page": "restroom.html",
       "enabled": true
     },
@@ -45,7 +45,7 @@
       "id": "emergency-card",
       "label": "緊急カード",
       "description": "救急時に見せる情報カード",
-      "icon": "🆘",
+      "icon": "emergency",
       "page": "emergency-card.html",
       "enabled": true,
       "core": true
@@ -54,7 +54,7 @@
       "id": "lab-tracker",
       "label": "検査値きろく",
       "description": "血液検査の推移をグラフ表示",
-      "icon": "🔬",
+      "icon": "science",
       "page": "lab-tracker.html",
       "enabled": true,
       "core": true
@@ -63,7 +63,7 @@
       "id": "summary",
       "label": "診察用サマリー",
       "description": "診察時に医師に見せる画面",
-      "icon": "📋",
+      "icon": "description",
       "page": "summary.html",
       "enabled": true,
       "core": true,
@@ -123,9 +123,16 @@
       { "id": "wbc", "label": "白血球数", "unit": "/μL", "normalRange": [3500, 9000] },
       { "id": "alb", "label": "アルブミン", "unit": "g/dL", "normalRange": [3.8, 5.2], "warnLow": 3.0 },
       { "id": "esr", "label": "赤沈（ESR）", "unit": "mm/h", "normalRange": [0, 15], "warnHigh": 30 },
-      { "id": "plt", "label": "血小板数", "unit": "万/μL", "normalRange": [15, 35] }
+      { "id": "plt", "label": "血小板数", "unit": "万/μL", "normalRange": [15, 35] },
+      { "id": "fcal", "label": "便中カルプロテクチン", "unit": "μg/g", "normalRange": [0, 50], "warnHigh": 250, "note": "活動性評価の標準指標。粘膜治癒目安<250" },
+      { "id": "lrg", "label": "LRG（ロイシンリッチα2糖蛋白）", "unit": "μg/mL", "normalRange": [0, 16], "warnHigh": 16, "note": "生物学的製剤使用時CRP正常でも活動性評価可能" },
+      { "id": "hbv_dna", "label": "HBV-DNA", "unit": "LogIU/mL", "normalRange": [0, 1.3], "note": "免疫抑制/生物学的製剤導入時必須" }
     ]
   },
+
+  "scoringTools": [
+    { "id": "pmayo", "label": "部分Mayoスコア（pMayo）", "range": "0-9", "note": "日常診療のUC活動性評価の標準" }
+  ],
 
   "emergencyConfig": {
     "title": "緊急情報カード",

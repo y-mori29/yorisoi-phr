@@ -7,6 +7,12 @@
       "step": 1
     },
     {
+      "id": "device_therapy",
+      "name": "デバイス療法",
+      "description": "持続皮下注・持続経腸投与・DBS等の進行期治療",
+      "step": 4
+    },
+    {
       "id": "dopamine_agonist",
       "name": "ドパミンアゴニスト",
       "description": "ドパミン受容体を直接刺激",
@@ -51,6 +57,20 @@
       "category": "levodopa",
       "dosageForms": ["経口"],
       "notes": "DCI配合剤。ネオドパストン等と同等の効果"
+    },
+    {
+      "genericName": "ホスレボドパ/ホスカルビドパ",
+      "brandNames": ["ヴィアレブ"],
+      "category": "device_therapy",
+      "dosageForms": ["持続皮下注"],
+      "notes": "2022年12月世界初承認（日本）・2023年7月発売。24時間持続皮下注で進行期PDのウェアリングオフ改善"
+    },
+    {
+      "genericName": "アポモルヒネ",
+      "brandNames": ["アポカイン"],
+      "category": "device_therapy",
+      "dosageForms": ["皮下注射"],
+      "notes": "オフ症状のレスキュー療法・自己注射可"
     },
     {
       "genericName": "プラミペキソール",

@@ -151,7 +151,7 @@ function renderMenuGrid(containerId) {
     const fullWidth = mod.fullWidth ? ' style="grid-column: 1 / -1;"' : "";
     html += `
       <a href="/${href}" class="menu-card"${fullWidth}>
-        <div class="menu-icon">${mod.icon}</div>
+        <div class="menu-icon"><span class="material-symbols-outlined">${mod.icon}</span></div>
         <div class="menu-label">${escapeHtml(mod.label)}</div>
         <div class="menu-desc">${escapeHtml(mod.description)}</div>
       </a>`;

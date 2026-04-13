@@ -4,14 +4,14 @@
   "shortName": "T1D",
   "description": "1型糖尿病（Type 1 Diabetes）のインスリン治療・血糖管理・症状を管理",
   "color": "#0ea5e9",
-  "icon": "💉",
+  "icon": "bloodtype",
 
   "modules": [
     {
       "id": "timeline",
       "label": "治療タイムライン",
       "description": "治療経歴を時系列で管理",
-      "icon": "📅",
+      "icon": "timeline",
       "page": "timeline.html",
       "enabled": true,
       "core": true
@@ -20,7 +20,7 @@
       "id": "medications",
       "label": "おくすり管理",
       "description": "インスリン・デバイスの処方と変更履歴",
-      "icon": "💊",
+      "icon": "medication",
       "page": "medications.html",
       "enabled": true,
       "core": true
@@ -29,7 +29,7 @@
       "id": "symptom-log",
       "label": "症状きろく",
       "description": "毎日の血糖コントロール状況をかんたん記録",
-      "icon": "📝",
+      "icon": "edit_note",
       "page": "symptom-log.html",
       "enabled": true
     },
@@ -37,7 +37,7 @@
       "id": "restroom",
       "label": "トイレさがし",
       "description": "近くのトイレをマップで表示",
-      "icon": "🚾",
+      "icon": "wc",
       "page": "restroom.html",
       "enabled": false
     },
@@ -45,7 +45,7 @@
       "id": "emergency-card",
       "label": "緊急カード",
       "description": "救急時に見せる情報カード",
-      "icon": "🆘",
+      "icon": "emergency",
       "page": "emergency-card.html",
       "enabled": true,
       "core": true
@@ -54,7 +54,7 @@
       "id": "lab-tracker",
       "label": "検査値きろく",
       "description": "血液検査の推移をグラフ表示",
-      "icon": "🔬",
+      "icon": "science",
       "page": "lab-tracker.html",
       "enabled": true,
       "core": true
@@ -63,7 +63,7 @@
       "id": "summary",
       "label": "診察用サマリー",
       "description": "診察時に医師に見せる画面",
-      "icon": "📋",
+      "icon": "description",
       "page": "summary.html",
       "enabled": true,
       "core": true,
@@ -77,8 +77,58 @@
     "title": "症状きろく",
     "metrics": [
       {
-        "id": "hypoCount",
-        "label": "低血糖回数",
+        "id": "tir",
+        "label": "TIR（Time in Range）",
+        "type": "counter",
+        "min": 0,
+        "max": 100,
+        "default": 70,
+        "unit": "%",
+        "description": "70-180mg/dL範囲内の時間割合。目標≥70%（18-65歳）"
+      },
+      {
+        "id": "tbr_l2",
+        "label": "TBR Lv2（<54mg/dL）",
+        "type": "counter",
+        "min": 0,
+        "max": 100,
+        "default": 0,
+        "unit": "%",
+        "description": "臨床的に重要な低血糖。目標<1%",
+        "dangerColor": true
+      },
+      {
+        "id": "tar_l1",
+        "label": "TAR（>180mg/dL）",
+        "type": "counter",
+        "min": 0,
+        "max": 100,
+        "default": 0,
+        "unit": "%",
+        "description": "目標<25%"
+      },
+      {
+        "id": "cv",
+        "label": "CV（変動係数）",
+        "type": "counter",
+        "min": 0,
+        "max": 100,
+        "default": 30,
+        "unit": "%",
+        "description": "血糖変動の振れ幅。目標<36%"
+      },
+      {
+        "id": "tdd",
+        "label": "インスリン総投与量（TDD）",
+        "type": "counter",
+        "min": 0,
+        "max": 200,
+        "default": 0,
+        "unit": "単位/日"
+      },
+      {
+        "id": "hypoLv2Count",
+        "label": "Lv2低血糖（<54mg/dL）",
         "type": "counter",
         "min": 0,
         "max": 10,
@@ -87,13 +137,22 @@
         "dangerColor": true
       },
       {
-        "id": "highCount",
-        "label": "高血糖回数",
+        "id": "hypoLv3Count",
+        "label": "Lv3重症低血糖（要介助）",
         "type": "counter",
         "min": 0,
         "max": 10,
         "default": 0,
-        "unit": "回"
+        "unit": "回",
+        "dangerColor": true,
+        "description": "意識障害・他者介助を要する"
+      },
+      {
+        "id": "hypoUnawareness",
+        "label": "低血糖への無自覚",
+        "type": "toggle",
+        "dangerColor": true,
+        "description": "重症低血糖リスク判定に必須"
       },
       {
         "id": "carbIntake",
@@ -128,16 +187,23 @@
       }
     ],
     "summaryMetrics": [
-      { "id": "hypoCount", "label": "低血糖回数/日", "aggregate": "avg" },
-      { "id": "highCount", "label": "高血糖回数/日", "aggregate": "avg" },
-      { "id": "carbIntake", "label": "平均炭水化物量", "aggregate": "avg" },
-      { "id": "fatigue", "label": "平均疲労感", "aggregate": "avg" }
+      { "id": "tir", "label": "平均TIR(%)", "aggregate": "avg" },
+      { "id": "cv", "label": "平均CV(%)", "aggregate": "avg" },
+      { "id": "tbr_l2", "label": "平均TBR Lv2(%)", "aggregate": "avg" },
+      { "id": "tar_l1", "label": "平均TAR(%)", "aggregate": "avg" },
+      { "id": "tdd", "label": "平均TDD", "aggregate": "avg" },
+      { "id": "hypoLv2Count", "label": "Lv2低血糖日数", "aggregate": "sum" },
+      { "id": "hypoLv3Count", "label": "Lv3低血糖日数", "aggregate": "sum" }
     ]
   },
 
   "labConfig": {
     "items": [
       { "id": "hba1c", "label": "HbA1c", "unit": "%", "normalRange": [4.6, 6.2], "warnHigh": 7.0 },
+      { "id": "gmi", "label": "GMI（Glucose Management Indicator）", "unit": "%", "normalRange": [5.5, 7.0], "warnHigh": 7.0, "note": "CGMから算出される推定HbA1c" },
+      { "id": "cpr", "label": "C-ペプチド（CPR）", "unit": "ng/mL", "normalRange": [0.6, 2.8], "warnLow": 0.5, "note": "残存β細胞機能の評価" },
+      { "id": "anti_gad", "label": "抗GAD抗体", "unit": "U/mL", "normalRange": [0, 5], "note": "1型糖尿病の診断・緩徐進行1型の判定" },
+      { "id": "anti_ia2", "label": "抗IA-2抗体", "unit": "U/mL", "normalRange": [0, 0.4], "note": "1型糖尿病の自己抗体" },
       { "id": "egfr", "label": "eGFR", "unit": "mL/min/1.73m²", "normalRange": [60, 120], "warnLow": 45 },
       { "id": "urine_alb", "label": "尿中アルブミン", "unit": "mg/gCr", "normalRange": [0, 30], "warnHigh": 300 },
       { "id": "tc", "label": "総コレステロール", "unit": "mg/dL", "normalRange": [130, 219] },
@@ -147,6 +213,11 @@
       { "id": "cre", "label": "クレアチニン（Cre）", "unit": "mg/dL", "normalRange": [0.6, 1.1], "warnHigh": 1.5 }
     ]
   },
+
+  "scoringTools": [
+    { "id": "tir_target", "label": "TIR国際コンセンサス目標", "note": "TIR≥70%, TBR(<70)<4%, TBR(<54)<1%, TAR(>180)<25%, TAR(>250)<5%, CV<36%" },
+    { "id": "hypo_levels", "label": "低血糖レベル定義", "note": "Lv1=54-69mg/dL（警告）, Lv2=<54mg/dL（臨床的に重要）, Lv3=重症（意識障害/他者介助）" }
+  ],
 
   "emergencyConfig": {
     "title": "緊急情報カード",
