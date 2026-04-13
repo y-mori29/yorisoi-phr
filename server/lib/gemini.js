@@ -3,7 +3,9 @@ const { GoogleGenerativeAI } = require("@google/generative-ai");
 const API_KEY = process.env.GEMINI_API_KEY;
 const genAI = API_KEY ? new GoogleGenerativeAI(API_KEY) : null;
 
-const MODEL_NAME = "gemini-2.5-flash";
+// 環境変数で上書き可能（未指定時は Gemini 3.1 Flash Lite Preview）
+const MODEL_NAME = process.env.GEMINI_MODEL || "gemini-3.1-flash-lite-preview";
+console.log("Gemini model:", MODEL_NAME);
 
 /**
  * 注記：安全ルールは「全禁止」ではなく「評価判定の禁止」に限定する。

@@ -77,14 +77,21 @@
   <!-- 音声入力オーバーレイ -->
   <div id="voice-overlay" class="hidden" style="position:fixed;inset:0;background:rgba(0,0,0,0.6);z-index:300;display:flex;align-items:center;justify-content:center;">
     <div style="background:var(--white);border-radius:var(--radius);padding:32px 24px;max-width:340px;width:90%;text-align:center;">
-      <div id="voice-mic" style="width:80px;height:80px;border-radius:50%;background:var(--brand-500);color:#fff;font-size:36px;display:flex;align-items:center;justify-content:center;margin:0 auto 16px;animation:pulse 1.5s infinite;">🎙</div>
-      <div id="voice-status" style="font-size:14px;color:var(--gray-600);margin-bottom:12px;">話してください...</div>
-      <div id="voice-text" style="background:var(--gray-50);padding:12px;border-radius:8px;min-height:60px;font-size:14px;text-align:left;margin-bottom:16px;"></div>
+      <div id="voice-mic" style="width:80px;height:80px;border-radius:50%;background:var(--brand-500);color:#fff;font-size:36px;display:flex;align-items:center;justify-content:center;margin:0 auto 16px;">🎙</div>
+      <div id="voice-timer" style="font-size:24px;font-weight:700;color:var(--gray-800);margin-bottom:4px;">00:00</div>
+      <div id="voice-status" style="font-size:14px;color:var(--gray-600);margin-bottom:16px;">話し終わったらボタンを押してください</div>
+      <div id="voice-example" style="background:var(--brand-50);padding:12px;border-radius:8px;font-size:12px;color:var(--gray-600);margin-bottom:16px;text-align:left;line-height:1.6;">
+        <strong style="color:var(--brand-700);">話し方の例：</strong><br>
+        「今日は排便4回、血便少しあり、お腹の痛みは2くらい、ちょっと疲れた」
+      </div>
       <button class="btn btn-primary" id="voice-stop">話し終わった</button>
       <button class="btn" id="voice-cancel" style="background:none;color:var(--gray-500);margin-top:8px;">キャンセル</button>
     </div>
   </div>
-  <style>@keyframes pulse{0%,100%{transform:scale(1);opacity:1}50%{transform:scale(1.1);opacity:0.8}}</style>
+  <style>
+    @keyframes pulseMic { 0%,100%{transform:scale(1);box-shadow:0 0 0 0 rgba(238,139,151,0.6);} 50%{transform:scale(1.08);box-shadow:0 0 0 20px rgba(238,139,151,0);} }
+    #voice-mic.recording { animation: pulseMic 1.5s infinite; }
+  </style>
 
   <div class="done-overlay hidden" id="done-overlay">
     <div class="done-card">
@@ -144,46 +151,94 @@
       if (cgmBtn) cgmBtn.addEventListener("click", startCGMScan);
     }
 
-    function startVoiceInput() {
-      if (!VoiceInput.isSupported()) {
-        alert("このブラウザは音声入力に対応していません。Chrome/Safariでお試しください。");
+    let currentRecorder = null;
+    let recordStartTime = null;
+    let timerInterval = null;
+
+    async function startVoiceInput() {
+      if (!VoiceRecorder.isSupported()) {
+        alert("このブラウザは音声録音に対応していません。Chrome/Safari/Edgeの最新版でお試しください。");
         return;
       }
       const overlay = document.getElementById("voice-overlay");
-      const textEl = document.getElementById("voice-text");
+      const micEl = document.getElementById("voice-mic");
       const statusEl = document.getElementById("voice-status");
-      textEl.textContent = "";
+      const timerEl = document.getElementById("voice-timer");
+      timerEl.textContent = "00:00";
+      statusEl.textContent = "話し終わったらボタンを押してください";
       overlay.classList.remove("hidden");
+      micEl.classList.add("recording");
 
-      const vi = new VoiceInput({
-        onInterim: (interim, finalText) => { textEl.textContent = finalText + interim; },
-        onFinal: async (finalText) => {
-          if (!finalText.trim()) {
-            overlay.classList.add("hidden");
-            return;
-          }
-          statusEl.textContent = "AIが内容を整理しています...";
-          try {
-            const res = await apiPost("/api/ai/parse-symptom", { text: finalText, diseaseId: getDiseaseId() });
-            overlay.classList.add("hidden");
-            applyAIResult(res.result, finalText);
-          } catch (err) {
-            alert("解析に失敗しました: " + err.message);
-            overlay.classList.add("hidden");
-          }
-        },
+      currentRecorder = new VoiceRecorder({
         onError: (err) => {
-          alert("音声エラー: " + err.message);
-          overlay.classList.add("hidden");
+          alert("マイクへのアクセスに失敗しました: " + err.message);
+          closeVoiceOverlay();
         },
       });
 
-      document.getElementById("voice-stop").onclick = () => vi.stop();
+      try {
+        await currentRecorder.start();
+        recordStartTime = Date.now();
+        timerInterval = setInterval(updateTimer, 500);
+      } catch (err) {
+        closeVoiceOverlay();
+        return;
+      }
+
+      document.getElementById("voice-stop").onclick = finishRecording;
       document.getElementById("voice-cancel").onclick = () => {
-        vi.stop();
-        overlay.classList.add("hidden");
+        if (currentRecorder) currentRecorder.cancel();
+        closeVoiceOverlay();
       };
-      vi.start();
+    }
+
+    function updateTimer() {
+      if (!recordStartTime) return;
+      const sec = Math.floor((Date.now() - recordStartTime) / 1000);
+      const mm = String(Math.floor(sec / 60)).padStart(2, "0");
+      const ss = String(sec % 60).padStart(2, "0");
+      document.getElementById("voice-timer").textContent = mm + ":" + ss;
+    }
+
+    async function finishRecording() {
+      if (!currentRecorder) return;
+      const stopBtn = document.getElementById("voice-stop");
+      const statusEl = document.getElementById("voice-status");
+      const micEl = document.getElementById("voice-mic");
+      stopBtn.disabled = true;
+      stopBtn.textContent = "処理中...";
+      statusEl.textContent = "AIが書き起こし・抽出中...";
+      micEl.classList.remove("recording");
+      clearInterval(timerInterval);
+
+      try {
+        const { dataUri } = await currentRecorder.stop();
+        const res = await apiPost("/api/ai/voice-symptom", {
+          audio: dataUri,
+          diseaseId: getDiseaseId(),
+        });
+        closeVoiceOverlay();
+        // values をプレ入力し、transcriptがあればmemoには入れない（AIがmemo返してくれる）
+        const combined = { ...res.values };
+        if (res.memo) combined.memo = res.memo;
+        applyAIResult(combined, null);
+        if (res.transcript) {
+          showToast("🎙 " + res.transcript.slice(0, 60), 4000);
+        }
+      } catch (err) {
+        alert("処理に失敗しました: " + err.message);
+        closeVoiceOverlay();
+      }
+    }
+
+    function closeVoiceOverlay() {
+      document.getElementById("voice-overlay").classList.add("hidden");
+      document.getElementById("voice-stop").disabled = false;
+      document.getElementById("voice-stop").textContent = "話し終わった";
+      document.getElementById("voice-mic").classList.remove("recording");
+      if (timerInterval) { clearInterval(timerInterval); timerInterval = null; }
+      currentRecorder = null;
+      recordStartTime = null;
     }
 
     function startChat() {

@@ -73,14 +73,7 @@ ${fieldDescriptions}
 
 上記の発話から ${fieldIds.join(", ")}, memo を含むJSONを出力してください。`;
 
-    const model = genAI.getGenerativeModel({
-      model: "gemini-2.5-flash",
-      systemInstruction: "あなたはテキストからデータを抽出してJSON形式で返すAIです。診断や治療アドバイスは行いません。データ抽出に集中してください。",
-      generationConfig: {
-        temperature: 0.1,
-        responseMimeType: "application/json",
-      },
-    });
+    const model = getTextModel();
     const result = await model.generateContent(prompt);
     const responseText = result.response.text();
     const parsed = parseJsonSafe(responseText);
@@ -105,6 +98,85 @@ ${fieldDescriptions}
 });
 
 // ======================================================
+// POST /api/ai/voice-symptom
+// 音声（WebM/MP4/WAV）→ Geminiマルチモーダルで書き起こし+構造化
+// body: { audio: "data:audio/webm;base64,...", diseaseId }
+// ======================================================
+router.post("/voice-symptom", async (req, res) => {
+  try {
+    const { audio, diseaseId } = req.body;
+    if (!audio) return res.status(400).json({ error: "audio required" });
+
+    const tmpl = getTemplate(diseaseId || "uc");
+    if (!tmpl) return res.status(404).json({ error: "Template not found" });
+
+    const metrics = tmpl.symptomConfig?.metrics || [];
+    const fieldDescriptions = metrics.map((m) => {
+      let desc = `- ${m.id} (${m.label})`;
+      if (m.type === "counter") desc += ` : 数値 ${m.min}〜${m.max}${m.unit ? " " + m.unit : ""}`;
+      if (m.type === "scale") desc += ` : ${m.min}〜${m.max}の段階${m.labels ? " (" + m.labels.join("/") + ")" : ""}`;
+      if (m.type === "toggle") desc += ` : true か false`;
+      if (m.description) desc += ` — ${m.description}`;
+      return desc;
+    }).join("\n");
+
+    const prompt = `添付の音声ファイルには、日本語で症状を話している患者の声が含まれています。
+まず音声を書き起こし、その内容から症状データを抽出してください。
+
+## 抽出対象のフィールド
+${fieldDescriptions}
+
+## 抽出例
+音声: "今日は排便4回、血便少しあり、お腹の痛みは2くらい、調子は悪くない"
+出力: {"transcript":"今日は排便4回、血便少しあり、お腹の痛みは2くらい、調子は悪くない","values":{"bowelCount":4,"bristolScale":null,"bleeding":true,"painScore":2},"memo":"調子は悪くない"}
+
+## ルール
+- transcript には音声の書き起こし全文を入れる
+- values には各フィールドの抽出値を入れる（該当情報がない項目は null）
+- 「あり」「少し」「ちょっと」→ true、「なし」「ない」→ false
+- memo には自由記述（感想等）のみ
+- 聞き取れない音声の場合は transcript: "" を返す
+
+## 出力JSON形式
+{
+  "transcript": "書き起こしたテキスト",
+  "values": {
+${metrics.map((m) => `    "${m.id}": <値 or null>`).join(",\n")}
+  },
+  "memo": <文字列 or null>
+}
+
+JSONのみを返してください。`;
+
+    const audioPart = dataUriToInlineData(audio);
+    const model = getTextModel();
+    const result = await model.generateContent([prompt, audioPart]);
+    const responseText = result.response.text();
+    const parsed = parseJsonSafe(responseText);
+
+    if (!parsed) {
+      return res.status(500).json({ error: "Failed to parse AI response", raw: responseText });
+    }
+
+    // サニタイズ
+    const cleanValues = {};
+    metrics.forEach((m) => {
+      const v = parsed.values?.[m.id];
+      if (v !== null && v !== undefined) cleanValues[m.id] = v;
+    });
+
+    res.json({
+      transcript: parsed.transcript || "",
+      values: cleanValues,
+      memo: parsed.memo || null,
+    });
+  } catch (err) {
+    console.error("voice-symptom error:", err);
+    res.status(500).json({ error: err.message });
+  }
+});
+
+// ======================================================
 // POST /api/ai/chat-symptom
 // 対話型で症状を聞き取る
 // body: { messages: [{role, content}...], diseaseId }
@@ -116,33 +188,45 @@ router.post("/chat-symptom", async (req, res) => {
     if (!tmpl) return res.status(404).json({ error: "Template not found" });
 
     const metrics = tmpl.symptomConfig?.metrics || [];
-    const fieldsDesc = metrics.map((m) => `${m.id}(${m.label}, ${m.type})`).join(", ");
+    const fieldsDesc = metrics.map((m) => {
+      let d = `${m.id}(${m.label}, ${m.type}`;
+      if (m.type === "counter" || m.type === "scale") d += ` ${m.min}-${m.max}`;
+      d += ")";
+      return d;
+    }).join(", ");
 
-    const systemContext = `あなたは${tmpl.name}の患者から今日の症状を聞き取る優しい対話AIです。
+    const systemContext = `あなたは${tmpl.name}の患者から今日の症状を聞き取る、優しく丁寧な対話AIアシスタントです。
 
-収集したいフィールド: ${fieldsDesc}
+## 収集したいフィールド
+${fieldsDesc}
 
-【進行ルール】
-1. まだ埋まっていないフィールドについて、1回に1〜2問だけ短く聞く
-2. 患者の回答から読み取れる値をメモしていく
-3. すべてのフィールドが埋まったか、患者が「これで終わり」と言ったら finished: true にする
-4. 診断・評価・アドバイスは絶対にしない。共感の一言と次の質問だけ
-5. 質問は親しみやすい口調で
-6. 聞き取った値は collected に格納する
+## あなたの役割
+- 患者が自由に話した内容から、該当するフィールドに値をマッピングする
+- まだ埋まっていないフィールドがあれば、自然な流れで聞き出す
+- 診断・評価・アドバイスは絶対にしない（「大変でしたね」等の共感と次の質問のみ）
 
-【出力形式 JSON】
+## 会話の進め方
+1. 患者のメッセージから値を抽出（複数項目まとめて話されたら全部抽出）
+2. まだ埋まっていない項目があれば、次の質問を1つだけ自然な言葉で聞く（機械的な「次は○○を教えて」ではなく、共感を挟んで）
+3. 大部分の項目が埋まったら「他に気になることはありますか？」と締めくくる
+4. ユーザーが「これで大丈夫」「終わり」等と言ったら finished: true
+
+## 出力ルール
+- collected は既に判明している全項目を含める（新規抽出だけでなく蓄積）
+- 数値は数値型で、真偽はbooleanで（"あり"→true、"なし"→false）
+- 該当情報がまだ聞けていないフィールドは null のまま
+
+## 出力形式 JSON
 {
-  "reply": "<次の質問または完了メッセージ>",
-  "collected": {
-    "<fieldId>": <値 or null>, ...
-  },
+  "reply": "次の質問または締めの言葉",
+  "collected": { "<fieldId>": <値 or null>, ... },
   "finished": <true or false>
 }`;
 
     // チャット履歴を構築
     const history = [];
     history.push({ role: "user", parts: [{ text: systemContext }] });
-    history.push({ role: "model", parts: [{ text: '{"reply":"こんにちは。今日の体調を一緒に記録しましょう。排便の回数から教えてください。","collected":{},"finished":false}' }] });
+    history.push({ role: "model", parts: [{ text: '{"reply":"準備できました","collected":{},"finished":false}' }] });
 
     messages.forEach((m) => {
       history.push({

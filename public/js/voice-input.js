@@ -1,75 +1,109 @@
 /**
- * 音声入力ヘルパー（Web Speech API ラッパー）
- * 使い方: const vi = new VoiceInput({ onFinal, onInterim, onError }); vi.start();
+ * 音声入力ヘルパー（MediaRecorder版）
+ * - ブラウザで音声を録音してBase64データURIを返す
+ * - サーバー側で Gemini に送って書き起こし＋構造化抽出
  */
 
-class VoiceInput {
-  constructor({ onFinal, onInterim, onError, onStart, onEnd, lang = "ja-JP" } = {}) {
-    this.onFinal = onFinal;
-    this.onInterim = onInterim;
-    this.onError = onError;
+class VoiceRecorder {
+  constructor({ onStart, onStop, onError } = {}) {
     this.onStart = onStart;
-    this.onEnd = onEnd;
-    this.lang = lang;
-    this.recognition = null;
+    this.onStop = onStop;
+    this.onError = onError;
+    this.mediaRecorder = null;
+    this.chunks = [];
+    this.stream = null;
     this.isRecording = false;
   }
 
-  /** ブラウザがサポートしているか */
   static isSupported() {
-    return !!(window.SpeechRecognition || window.webkitSpeechRecognition);
+    return !!(navigator.mediaDevices && navigator.mediaDevices.getUserMedia && window.MediaRecorder);
   }
 
-  start() {
-    if (this.isRecording) return;
-    const Recognition = window.SpeechRecognition || window.webkitSpeechRecognition;
-    if (!Recognition) {
-      if (this.onError) this.onError(new Error("音声入力はこのブラウザでは使えません"));
-      return;
+  /** 利用可能な最適なmimeTypeを選ぶ */
+  static pickMimeType() {
+    const candidates = [
+      "audio/webm;codecs=opus",
+      "audio/webm",
+      "audio/mp4;codecs=mp4a.40.2",
+      "audio/mp4",
+      "audio/ogg;codecs=opus",
+    ];
+    for (const mt of candidates) {
+      if (MediaRecorder.isTypeSupported && MediaRecorder.isTypeSupported(mt)) return mt;
     }
+    return "";
+  }
 
-    this.recognition = new Recognition();
-    this.recognition.lang = this.lang;
-    this.recognition.interimResults = true;
-    this.recognition.continuous = true;
-    this.finalText = "";
+  async start() {
+    if (this.isRecording) return;
+    try {
+      this.stream = await navigator.mediaDevices.getUserMedia({
+        audio: {
+          echoCancellation: true,
+          noiseSuppression: true,
+          sampleRate: 44100,
+        },
+      });
+      const mimeType = VoiceRecorder.pickMimeType();
+      const options = mimeType ? { mimeType } : {};
+      this.mediaRecorder = new MediaRecorder(this.stream, options);
+      this.chunks = [];
 
-    this.recognition.onstart = () => {
+      this.mediaRecorder.ondataavailable = (e) => {
+        if (e.data.size > 0) this.chunks.push(e.data);
+      };
+
+      this.mediaRecorder.start();
       this.isRecording = true;
       if (this.onStart) this.onStart();
-    };
-
-    this.recognition.onresult = (event) => {
-      let interim = "";
-      for (let i = event.resultIndex; i < event.results.length; i++) {
-        const r = event.results[i];
-        if (r.isFinal) {
-          this.finalText += r[0].transcript;
-        } else {
-          interim += r[0].transcript;
-        }
-      }
-      if (this.onInterim) this.onInterim(interim, this.finalText);
-    };
-
-    this.recognition.onerror = (event) => {
-      if (this.onError) this.onError(new Error(event.error));
-    };
-
-    this.recognition.onend = () => {
-      this.isRecording = false;
-      if (this.onFinal) this.onFinal(this.finalText);
-      if (this.onEnd) this.onEnd();
-    };
-
-    this.recognition.start();
+    } catch (err) {
+      if (this.onError) this.onError(err);
+      throw err;
+    }
   }
 
-  stop() {
-    if (this.recognition && this.isRecording) {
-      this.recognition.stop();
+  /** 録音停止 → Blob → Base64データURIに変換して返す */
+  async stop() {
+    if (!this.isRecording || !this.mediaRecorder) return null;
+    return new Promise((resolve, reject) => {
+      this.mediaRecorder.onstop = async () => {
+        try {
+          const mimeType = this.mediaRecorder.mimeType || "audio/webm";
+          const blob = new Blob(this.chunks, { type: mimeType });
+          // stream を閉じる
+          if (this.stream) {
+            this.stream.getTracks().forEach((t) => t.stop());
+          }
+          this.isRecording = false;
+          const dataUri = await blobToBase64(blob);
+          if (this.onStop) this.onStop({ blob, dataUri, mimeType });
+          resolve({ blob, dataUri, mimeType });
+        } catch (e) {
+          reject(e);
+        }
+      };
+      this.mediaRecorder.stop();
+    });
+  }
+
+  cancel() {
+    if (this.mediaRecorder && this.isRecording) {
+      try { this.mediaRecorder.stop(); } catch (e) {}
     }
+    if (this.stream) {
+      this.stream.getTracks().forEach((t) => t.stop());
+    }
+    this.isRecording = false;
   }
 }
 
-window.VoiceInput = VoiceInput;
+function blobToBase64(blob) {
+  return new Promise((resolve, reject) => {
+    const reader = new FileReader();
+    reader.onloadend = () => resolve(reader.result);
+    reader.onerror = reject;
+    reader.readAsDataURL(blob);
+  });
+}
+
+window.VoiceRecorder = VoiceRecorder;
