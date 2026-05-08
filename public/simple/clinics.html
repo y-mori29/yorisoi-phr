@@ -3,7 +3,7 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-  <title>かかりつけ - よりそい</title>
+  <title>かかりつけ病院 - よりそい</title>
   <link rel="stylesheet" href="/css/style.css">
   <link rel="stylesheet" href="https://fonts.googleapis.com/icon?family=Material+Symbols+Outlined" />
   <style>
@@ -89,52 +89,52 @@
 <body>
   <div class="header">
     <button class="header-back" onclick="location.href='/simple/settings.html'+location.search">&larr;</button>
-    <h1>かかりつけ</h1>
+    <h1>かかりつけ病院</h1>
   </div>
 
   <div class="content">
     <div id="clinic-list">
-      <div class="loading"><div class="loading-spinner"></div><p class="mt-8 text-sm text-muted">よみこみちゅう...</p></div>
+      <div class="loading"><div class="loading-spinner"></div><p class="mt-8 text-sm text-muted">読み込み中...</p></div>
     </div>
 
     <button class="add-button" id="add-btn">
       <span class="material-symbols-outlined">add</span>
-      あたらしく とうろく
+      新しく登録
     </button>
   </div>
 
   <div class="form-modal-bg" id="form-modal-bg">
     <div class="form-modal">
-      <h3 id="form-title">あたらしい かかりつけ</h3>
+      <h3 id="form-title">新しいかかりつけ病院</h3>
       <input type="hidden" id="f-id" value="">
       <div class="form-row">
-        <label>びょういん・クリニックめい</label>
+        <label>病院・クリニック名</label>
         <input type="text" id="f-name" placeholder="例: ○○クリニック">
       </div>
       <div class="form-row">
-        <label>しんりょうか（コンマ「,」 で くぎる）</label>
+        <label>診療科（カンマ「,」で区切る）</label>
         <input type="text" id="f-departments" placeholder="例: 内科, 眼科">
-        <div class="hint">ひとつ いじょう にゅうりょくしてください</div>
+        <div class="hint">1つ以上入力してください</div>
       </div>
       <div class="form-row">
-        <label>じゅうしょ（にんい）</label>
+        <label>住所（任意）</label>
         <input type="text" id="f-address" placeholder="">
       </div>
       <div class="form-row">
-        <label>でんわ（にんい）</label>
+        <label>電話（任意）</label>
         <input type="text" id="f-phone" placeholder="">
       </div>
       <div class="form-row">
-        <label>メモ（にんい）</label>
+        <label>メモ（任意）</label>
         <textarea id="f-note" placeholder=""></textarea>
       </div>
       <div class="form-row checkbox-row">
         <input type="checkbox" id="f-isprimary">
-        <label for="f-isprimary">いちばん よく いく かかりつけ</label>
+        <label for="f-isprimary">いちばんよく行くかかりつけ</label>
       </div>
       <div class="form-actions">
         <button class="btn-cancel" id="form-cancel">やめる</button>
-        <button class="btn-save" id="form-save">ほぞんする</button>
+        <button class="btn-save" id="form-save">保存する</button>
       </div>
     </div>
   </div>
@@ -156,14 +156,14 @@
         root.innerHTML = `
           <div class="empty-state">
             <span class="material-symbols-outlined" style="font-size:48px;color:var(--gray-300);">local_hospital</span>
-            <p class="mt-8 text-sm">まだ かかりつけが とうろく されていません</p>
-            <p class="text-sm text-muted mt-8">したの「あたらしく とうろく」から ふやして ください</p>
+            <p class="mt-8 text-sm">まだ かかりつけ病院が登録されていません</p>
+            <p class="text-sm text-muted mt-8">下の「新しく登録」から追加してください</p>
           </div>`;
         return;
       }
       const html = clinics.map((c) => `
         <div class="clinic-card ${c.isPrimary ? 'primary' : ''}">
-          <div class="clinic-name">${escHTML(c.name)}${c.isPrimary ? '<span class="clinic-primary-tag">かかりつけ</span>' : ''}</div>
+          <div class="clinic-name">${escHTML(c.name)}${c.isPrimary ? '<span class="clinic-primary-tag">メイン</span>' : ''}</div>
           <div class="clinic-departments">${(c.departments || []).map(d => `<span class="dept-chip">${escHTML(d)}</span>`).join("")}</div>
           ${c.address || c.phone || c.note ? `<div class="clinic-meta">
             ${c.address ? `📍 ${escHTML(c.address)}<br>` : ""}
@@ -171,8 +171,8 @@
             ${c.note ? escHTML(c.note) : ""}
           </div>` : ""}
           <div class="clinic-actions">
-            <button class="btn-edit" data-id="${c.id}" data-action="edit">へんしゅう</button>
-            <button class="btn-delete" data-id="${c.id}" data-action="delete">さくじょ</button>
+            <button class="btn-edit" data-id="${c.id}" data-action="edit">編集</button>
+            <button class="btn-delete" data-id="${c.id}" data-action="delete">削除</button>
           </div>
         </div>
       `).join("");
@@ -194,12 +194,12 @@
       } catch (err) {
         console.error("Load error:", err);
         document.getElementById("clinic-list").innerHTML =
-          '<p class="text-sm" style="color:var(--danger); text-align:center;">よみこみに しっぱいしました</p>';
+          '<p class="text-sm" style="color:var(--danger); text-align:center;">読み込みに失敗しました</p>';
       }
     }
 
     function openForm(clinic) {
-      document.getElementById("form-title").textContent = clinic ? "へんしゅう" : "あたらしい かかりつけ";
+      document.getElementById("form-title").textContent = clinic ? "編集" : "新しいかかりつけ病院";
       document.getElementById("f-id").value = clinic?.id || "";
       document.getElementById("f-name").value = clinic?.name || "";
       document.getElementById("f-departments").value = (clinic?.departments || []).join(", ");
@@ -219,8 +219,8 @@
       const name = document.getElementById("f-name").value.trim();
       const departments = document.getElementById("f-departments").value
         .split(/[,、]/).map(s => s.trim()).filter(Boolean);
-      if (!name) return alert("びょういんめいを にゅうりょくしてください");
-      if (!departments.length) return alert("しんりょうかを 1つ いじょう にゅうりょくしてください");
+      if (!name) return alert("病院名を入力してください");
+      if (!departments.length) return alert("診療科を1つ以上入力してください");
 
       const data = {
         name,
@@ -238,18 +238,18 @@
         await loadClinics();
       } catch (err) {
         console.error("Save error:", err);
-        alert("ほぞんに しっぱいしました");
+        alert("保存に失敗しました");
       }
     }
 
     async function deleteClinic(id) {
-      if (!confirm("このかかりつけを さくじょしますか？")) return;
+      if (!confirm("このかかりつけ病院を削除しますか？")) return;
       try {
         await apiDelete(`/api/clinics/${id}`);
         await loadClinics();
       } catch (err) {
         console.error("Delete error:", err);
-        alert("さくじょに しっぱいしました");
+        alert("削除に失敗しました");
       }
     }
 

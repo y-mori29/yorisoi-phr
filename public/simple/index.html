@@ -74,20 +74,20 @@
 <body>
   <div class="simple-header">
     <h1>よりそい</h1>
-    <p class="subtitle" id="header-sub">あなたの からだの きろく</p>
+    <p class="subtitle" id="header-sub">あなたの治療記録</p>
   </div>
 
   <div class="menu-area" id="menu-area">
     <div class="loading-mask">
       <div class="loading-spinner"></div>
-      <p class="text-sm mt-8">よみこみちゅう...</p>
+      <p class="text-sm mt-8">読み込み中...</p>
     </div>
   </div>
 
   <div class="footer-area">
     <a class="settei-button" id="settei-link" href="/simple/settings.html">
       <span class="material-symbols-outlined">settings</span>
-      せってい
+      設定
     </a>
   </div>
 
@@ -97,14 +97,14 @@
     document.addEventListener("DOMContentLoaded", async () => {
       try {
         const { template, diseaseId } = await initLiff();
-        const sub = template.name ? `${template.name} の きろく` : "あなたの からだの きろく";
+        const sub = template.name ? `${template.name} の記録` : "あなたの治療記録";
         document.getElementById("header-sub").textContent = sub;
 
         const q = "?disease=" + encodeURIComponent(diseaseId);
         const buttons = [
-          { href: "/simple/record.html" + q,   icon: "edit_note",       label: "きろくする",   desc: "じゅしんを かきとめる" },
-          { href: "/simple/calendar.html" + q, icon: "calendar_month",  label: "ふりかえる",   desc: "これまでの ながれを みる" },
-          { href: "/simple/show.html" + q,     icon: "co_present",      label: "みせる",       desc: "おいしゃさんに みせる" },
+          { href: "/simple/record.html" + q,   icon: "edit_note",       label: "きろくする",   desc: "今日の受診を記録" },
+          { href: "/simple/calendar.html" + q, icon: "calendar_month",  label: "ふりかえる",   desc: "これまでの流れを見る" },
+          { href: "/simple/show.html" + q,     icon: "co_present",      label: "みせる",       desc: "医師に見せる" },
         ];
         const html = buttons.map(b => `
           <a class="big-button" href="${b.href}">
@@ -122,7 +122,7 @@
       } catch (err) {
         console.error("Init error:", err);
         document.getElementById("menu-area").innerHTML =
-          '<p class="text-sm" style="color:var(--danger); text-align:center;">よみこみに しっぱいしました</p>';
+          '<p class="text-sm" style="color:var(--danger); text-align:center;">読み込みに失敗しました</p>';
       }
     });
   </script>

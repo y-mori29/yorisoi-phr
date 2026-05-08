@@ -3,7 +3,7 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-  <title>せってい - よりそい</title>
+  <title>設定 - よりそい</title>
   <link rel="stylesheet" href="/css/style.css">
   <link rel="stylesheet" href="https://fonts.googleapis.com/icon?family=Material+Symbols+Outlined" />
   <style>
@@ -65,13 +65,13 @@
 <body>
   <div class="header">
     <button class="header-back" onclick="location.href='/simple/'+location.search">&larr;</button>
-    <h1>せってい</h1>
+    <h1>設定</h1>
   </div>
 
   <div class="content">
 
     <div class="settings-section">
-      <div class="settings-section-title">ひょうじモード</div>
+      <div class="settings-section-title">表示モード</div>
       <div class="mode-card">
         <div class="mode-toggle" id="mode-toggle">
           <button id="btn-simple" data-mode="simple">かんたん</button>
@@ -82,13 +82,13 @@
     </div>
 
     <div class="settings-section">
-      <div class="settings-section-title">きろく</div>
+      <div class="settings-section-title">記録</div>
       <div class="settings-list">
         <a class="settings-row" href="/simple/clinics.html">
           <span class="material-symbols-outlined">local_hospital</span>
           <div style="flex:1;">
-            <div class="label">かかりつけ</div>
-            <div class="sub">びょういん・しんりょうかを とうろく</div>
+            <div class="label">かかりつけ病院</div>
+            <div class="sub">病院・診療科を登録</div>
           </div>
           <span class="material-symbols-outlined chevron">chevron_right</span>
         </a>
@@ -101,8 +101,8 @@
         <a class="settings-row" href="/setup.html">
           <span class="material-symbols-outlined">tune</span>
           <div style="flex:1;">
-            <div class="label">びょうきの へんこう</div>
-            <div class="sub">どの びょうきの きろくを する？</div>
+            <div class="label">病気の変更</div>
+            <div class="sub">どの病気の記録をするか選び直す</div>
           </div>
           <span class="material-symbols-outlined chevron">chevron_right</span>
         </a>
@@ -115,8 +115,8 @@
   <script src="/js/liff-init.js"></script>
   <script>
     const MODE_DESC = {
-      simple: "「かんたん」モードでは おおきな ボタンの きろく・ふりかえる・みせる の 3つで そうさします。",
-      detail: "「くわしい」モードでは これまでの ぜんぶの メニュー（しょうじょうきろく・けんさち・きんきゅうカード など）が ひらきます。",
+      simple: "「かんたん」モードは大きな3つのボタン（きろくする／ふりかえる／みせる）でシンプルに操作できます。",
+      detail: "「くわしい」モードはすべてのメニュー（症状記録・検査値・緊急カードなど）が表示されます。",
     };
 
     function applyToggleUI(mode) {
