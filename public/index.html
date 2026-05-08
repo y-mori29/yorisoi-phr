@@ -19,6 +19,10 @@
     .simple-header .subtitle { font-size: 13px; opacity: 0.9; margin-top: 6px; letter-spacing: 1px; }
 
     .menu-area { flex: 1; padding: 28px 20px; display: flex; flex-direction: column; gap: 18px; }
+    .home-tagline {
+      text-align: center; padding: 20px 20px 0;
+      font-size: 13px; color: var(--gray-600); letter-spacing: 0.5px; line-height: 1.7;
+    }
 
     .big-button {
       display: flex; align-items: center; gap: 18px;
@@ -70,12 +74,12 @@
     }
     .footer-btn:active { transform: scale(0.97); }
     .footer-btn .material-symbols-outlined { font-size: 18px; }
-    .footer-btn.emergency {
-      border-color: #fca5a5;
-      color: #b91c1c;
+    .footer-btn.assurance {
+      border-color: var(--brand-300);
+      color: var(--brand-700);
     }
-    .footer-btn.emergency:hover { background: #fef2f2; }
-    .footer-btn.emergency .material-symbols-outlined { color: #dc2626; }
+    .footer-btn.assurance:hover { background: var(--brand-50); }
+    .footer-btn.assurance .material-symbols-outlined { color: var(--brand-600); }
 
     .loading-mask { padding: 40px; text-align: center; color: var(--gray-500); }
   </style>
@@ -86,6 +90,8 @@
     <p class="subtitle" id="header-sub">あなたの治療記録</p>
   </div>
 
+  <p class="home-tagline">毎日の体調も、受診の記録も、ここで全部。</p>
+
   <div class="menu-area" id="menu-area">
     <div class="loading-mask">
       <div class="loading-spinner"></div>
@@ -94,13 +100,13 @@
   </div>
 
   <div class="footer-area">
-    <a class="footer-btn emergency" id="emergency-link" href="/emergency-card.html">
-      <span class="material-symbols-outlined">emergency</span>
-      緊急カード
+    <a class="footer-btn assurance" id="emergency-link" href="/emergency-card.html">
+      <span class="material-symbols-outlined">badge</span>
+      あんしんカード
     </a>
     <a class="footer-btn" id="settei-link" href="/simple/settings.html">
-      <span class="material-symbols-outlined">settings</span>
-      設定
+      <span class="material-symbols-outlined">apps</span>
+      その他
     </a>
   </div>
 
@@ -121,9 +127,9 @@
 
         const q = "?disease=" + encodeURIComponent(diseaseId);
         const buttons = [
-          { href: "/simple/record.html" + q,   icon: "edit_note",       label: "きろくする",   desc: "受診や体調を記録する" },
-          { href: "/simple/calendar.html" + q, icon: "calendar_month",  label: "ふりかえる",   desc: "これまでの流れを見る" },
-          { href: "/simple/show.html" + q,     icon: "co_present",      label: "みせる",       desc: "医師に見せる" },
+          { href: "/simple/record.html" + q,   icon: "edit_note",       label: "きろくする",   desc: "受診や体調をのこす" },
+          { href: "/simple/calendar.html" + q, icon: "calendar_month",  label: "ふりかえる",   desc: "これまでの記録を見る" },
+          { href: "/simple/show.html" + q,     icon: "co_present",      label: "みせる",       desc: "医師にパッと見せる" },
         ];
         const html = buttons.map(b => `
           <a class="big-button" href="${b.href}">

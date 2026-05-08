@@ -73,6 +73,34 @@
     .chip-clinic .star { color: #f59e0b; margin-right: 2px; }
 
     .empty { text-align: center; padding: 30px 20px; color: var(--gray-500); font-size: 13px; }
+
+    /* 空状態ガイド */
+    .empty-guide {
+      text-align: center; padding: 40px 24px;
+      background: var(--white); border-radius: 16px;
+      border: 2px dashed var(--brand-200); margin: 16px;
+    }
+    .empty-guide .big-icon { font-size: 56px; color: var(--brand-300); }
+    .empty-guide h3 { font-size: 17px; margin-top: 8px; letter-spacing: 1px; }
+    .empty-guide p { font-size: 13px; color: var(--gray-600); margin-top: 8px; line-height: 1.6; }
+    .empty-guide .cta {
+      display: inline-block; margin-top: 16px;
+      padding: 12px 24px; background: var(--brand-500); color: #fff;
+      border-radius: 24px; font-weight: 700; text-decoration: none; font-size: 14px;
+    }
+
+    /* FAB */
+    .fab-record {
+      position: fixed; bottom: 24px; right: 24px;
+      display: flex; align-items: center; gap: 8px;
+      padding: 14px 20px; border-radius: 30px;
+      background: var(--brand-500); color: #fff;
+      box-shadow: 0 6px 16px rgba(244,167,176,0.5);
+      text-decoration: none; font-weight: 700; font-size: 15px; letter-spacing: 1px;
+      cursor: pointer; transition: all 0.15s; z-index: 50;
+    }
+    .fab-record:active { transform: scale(0.96); }
+    .fab-record .material-symbols-outlined { font-size: 20px; }
   </style>
 </head>
 <body>
@@ -106,6 +134,10 @@
     </div>
   </div>
 
+  <a class="fab-record" id="fab-record" href="/simple/record.html">
+    <span class="material-symbols-outlined">add</span>記録する
+  </a>
+
   <script src="https://static.line-scdn.net/liff/edge/2/sdk.js" defer></script>
   <script src="/js/liff-init.js"></script>
   <script>
@@ -130,6 +162,7 @@
       const ctx = await initLiff();
       const q = "?disease=" + encodeURIComponent(ctx.diseaseId);
       document.getElementById("back-btn").onclick = () => location.href = "/" + q;
+      document.getElementById("fab-record").href = "/simple/record.html" + q;
       if (ctx.template?.color) document.querySelector(".page-header").style.background = `linear-gradient(135deg, ${ctx.template.color}, ${ctx.template.color}dd)`;
 
       categoryLabels = getCategoryLabels();
@@ -275,8 +308,21 @@
       }
 
       if (!events.length) {
-        const msg = selectedDate ? `${selectedDate} には記録がありません` : "まだ記録がありません";
-        container.innerHTML = `<div class="empty">${msg}</div>`;
+        if (selectedDate) {
+          container.innerHTML = `<div class="empty">${selectedDate} には記録がありません</div>`;
+        } else if (!allEvents.length) {
+          // 全くの空状態 → ガイド
+          const q = location.search;
+          container.innerHTML = `
+            <div class="empty-guide">
+              <span class="material-symbols-outlined big-icon">edit_note</span>
+              <h3>まだ記録がありません</h3>
+              <p>受診の内容や、今日の体調を記録すると、<br>ここに時系列で表示されます。</p>
+              <a class="cta" href="/simple/record.html${q}">+ 最初の記録をする</a>
+            </div>`;
+        } else {
+          container.innerHTML = `<div class="empty">この条件に合う記録はありません</div>`;
+        }
         return;
       }
 

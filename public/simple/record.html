@@ -9,14 +9,32 @@
   <style>
     body { padding-bottom: 96px; }
 
-    /* タブ */
-    .record-tabs { display: flex; background: var(--white); border-bottom: 1px solid var(--gray-200); position: sticky; top: 0; z-index: 10; }
-    .record-tab {
-      flex: 1; padding: 14px 8px; text-align: center; font-size: 14px; font-weight: 700;
-      color: var(--gray-500); border: none; background: none; border-bottom: 3px solid transparent;
-      cursor: pointer; letter-spacing: 1px;
+    /* 2択画面 */
+    .choice-wrap { padding: 32px 20px; }
+    .choice-title { font-size: 20px; font-weight: 700; margin-bottom: 6px; letter-spacing: 1px; }
+    .choice-sub { font-size: 13px; color: var(--gray-500); margin-bottom: 24px; line-height: 1.6; }
+    .choice-btn {
+      width: 100%; display: flex; align-items: center; gap: 18px;
+      padding: 22px 20px; margin-bottom: 14px;
+      background: var(--white); border: 3px solid var(--gray-200);
+      border-radius: 22px; box-shadow: var(--shadow);
+      text-align: left; cursor: pointer; transition: all 0.15s;
+      color: var(--gray-800); text-decoration: none;
     }
-    .record-tab.active { color: var(--brand-600); border-bottom-color: var(--brand-500); background: var(--brand-50); }
+    .choice-btn:active { transform: scale(0.98); }
+    .choice-btn:hover { border-color: var(--brand-400); background: var(--brand-50); }
+    .choice-btn.self:hover { border-color: #38bdf8; background: #f0f9ff; }
+    .choice-icon {
+      width: 60px; height: 60px; border-radius: 50%;
+      background: var(--brand-100);
+      display: flex; align-items: center; justify-content: center; flex-shrink: 0;
+    }
+    .choice-icon .material-symbols-outlined { font-size: 32px; color: var(--brand-600); }
+    .choice-btn.self .choice-icon { background: #e0f2fe; }
+    .choice-btn.self .choice-icon .material-symbols-outlined { color: #0284c7; }
+    .choice-btn .label-area { flex: 1; }
+    .choice-btn .label { font-size: 18px; font-weight: 700; letter-spacing: 1.5px; line-height: 1.2; }
+    .choice-btn .description { font-size: 12px; color: var(--gray-500); margin-top: 4px; }
 
     /* 受診タブ プログレス */
     .progress-bar {
@@ -192,10 +210,26 @@
     <h1 id="header-title">きろくする</h1>
   </div>
 
-  <!-- 底部タブ（受診/体調） -->
-  <div class="record-tabs">
-    <button class="record-tab active" data-tab="visit">受診の記録</button>
-    <button class="record-tab" data-tab="self">体調メモ</button>
+  <!-- ===== 最初の選択画面 ===== -->
+  <div id="choice-tab">
+    <div class="choice-wrap">
+      <div class="choice-title">なにを記録しますか？</div>
+      <div class="choice-sub">あとから「ふりかえる」で見返せます。</div>
+      <button class="choice-btn" data-go="visit">
+        <div class="choice-icon"><span class="material-symbols-outlined">local_hospital</span></div>
+        <div class="label-area">
+          <div class="label">受診の記録</div>
+          <div class="description">病院で言われたこと・処方を残す</div>
+        </div>
+      </button>
+      <button class="choice-btn self" data-go="self">
+        <div class="choice-icon"><span class="material-symbols-outlined">favorite</span></div>
+        <div class="label-area">
+          <div class="label">体調の記録</div>
+          <div class="description">今日のからだの様子をメモする</div>
+        </div>
+      </button>
+    </div>
   </div>
 
   <!-- ===== 受診の記録タブ ===== -->
@@ -348,29 +382,29 @@
   <script src="/js/liff-init.js"></script>
   <script src="/js/visit-recorder.js"></script>
   <script>
-    /* ============ タブ切替 ============ */
-    let activeTab = "visit"; // "visit" | "self"
+    /* ============ モード切替 (choice / visit / self) ============ */
+    let activeTab = "choice";
     function setActiveTab(tab) {
       activeTab = tab;
-      document.querySelectorAll(".record-tab").forEach(t => t.classList.toggle("active", t.dataset.tab === tab));
+      document.getElementById("choice-tab").style.display = tab === "choice" ? "" : "none";
       document.getElementById("visit-tab").style.display = tab === "visit" ? "" : "none";
       document.getElementById("self-tab").style.display = tab === "self" ? "" : "none";
-      // フッター(つぎへ/もどる) は受診タブのみ
-      document.getElementById("nav-footer").style.display = (tab === "visit" && !document.getElementById("pane-done").classList.contains("active")) ? "flex" : "none";
-      // 体調タブはもう一件モードのときフッター不要
-      if (tab === "self") {
-        // self-entry状態なら底部に保存ボタン (フッターを使い回す)
+
+      const footer = document.getElementById("nav-footer");
+      if (tab === "choice") {
+        footer.style.display = "none";
+      } else if (tab === "visit") {
+        footer.style.display = document.getElementById("pane-done").classList.contains("active") ? "none" : "flex";
+      } else if (tab === "self") {
         if (document.getElementById("self-entry").classList.contains("active")) {
-          document.getElementById("nav-footer").style.display = "flex";
+          footer.style.display = "flex";
           document.getElementById("btn-prev").style.visibility = "hidden";
           document.getElementById("btn-next").textContent = "保存する";
         } else {
-          document.getElementById("nav-footer").style.display = "none";
+          footer.style.display = "none";
         }
       }
       window.scrollTo(0, 0);
-      // どちらのモードにいたか保存
-      localStorage.setItem("yorisoi_record_mode", tab);
     }
 
     /* ============ 受診ウィザード ============ */
@@ -737,8 +771,14 @@
 
     /* ============ イベント設定 ============ */
     function attachInputs() {
-      // タブ切替
-      document.querySelectorAll(".record-tab").forEach((t) => t.addEventListener("click", () => setActiveTab(t.dataset.tab)));
+      // 2択ボタン
+      document.querySelectorAll(".choice-btn").forEach((b) => {
+        b.addEventListener("click", () => {
+          const go = b.dataset.go;
+          setActiveTab(go);
+          if (go === "self") showSelfPane("entry");
+        });
+      });
 
       // 受診タブ - 入力イベント
       document.getElementById("visit-date").addEventListener("change", (e) => { draft.date = e.target.value; saveDraft(); });
@@ -767,8 +807,24 @@
         syncPaneToDraft();
       });
 
-      // 戻る・完了画面
-      document.getElementById("header-back").addEventListener("click", () => { location.href = "/" + location.search; });
+      // 戻る: choice 以外なら choice に戻る、choice ならホームへ
+      document.getElementById("header-back").addEventListener("click", () => {
+        if (activeTab === "choice") {
+          location.href = "/" + location.search;
+        } else {
+          // 体調メモは done 画面なら home へ
+          if (activeTab === "self" && document.getElementById("self-done").classList.contains("active")) {
+            location.href = "/" + location.search;
+            return;
+          }
+          // 受診の done 画面ならホームへ
+          if (activeTab === "visit" && document.getElementById("pane-done").classList.contains("active")) {
+            location.href = "/" + location.search;
+            return;
+          }
+          setActiveTab("choice");
+        }
+      });
       document.getElementById("btn-record-another").addEventListener("click", () => {
         Object.assign(draft, {
           date: new Date().toISOString().slice(0, 10),
@@ -802,12 +858,11 @@
       attachInputs();
       syncPaneToDraft();
       showPane(1);
-      // タブ初期値: URL パラメータ ?tab=self / ?tab=visit が優先、次に localStorage
-      const urlTab = new URLSearchParams(location.search).get("tab");
-      const stored = localStorage.getItem("yorisoi_record_mode");
-      const initialTab = (urlTab === "self" || urlTab === "visit") ? urlTab : (stored === "self" ? "self" : "visit");
-      setActiveTab(initialTab);
-      if (initialTab === "self") showSelfPane("entry");
+      // 初期画面: ?type=visit/self なら直接そこへ、それ以外は choice
+      const urlType = new URLSearchParams(location.search).get("type");
+      const initial = (urlType === "visit" || urlType === "self") ? urlType : "choice";
+      setActiveTab(initial);
+      if (initial === "self") showSelfPane("entry");
       await loadClinics();
     });
   </script>

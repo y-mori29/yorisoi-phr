@@ -3,33 +3,48 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-  <title>緊急カード - よりそい PHR</title>
+  <title>あんしんカード - よりそい</title>
   <link rel="stylesheet" href="/css/style.css">
+  <link rel="stylesheet" href="https://fonts.googleapis.com/icon?family=Material+Symbols+Outlined" />
   <style>
-    .ecard { background: linear-gradient(135deg, #dc2626, #b91c1c); color: #fff; border-radius: var(--radius); padding: 20px; margin-bottom: 16px; }
-    .ecard-title { font-size: 20px; font-weight: 800; text-align: center; margin-bottom: 4px; letter-spacing: 2px; }
-    .ecard-subtitle { text-align: center; font-size: 14px; opacity: 0.9; margin-bottom: 16px; }
-    .ecard-section { background: rgba(255,255,255,0.15); border-radius: var(--radius-sm); padding: 12px; margin-bottom: 10px; }
-    .ecard-label { font-size: 11px; font-weight: 700; text-transform: uppercase; letter-spacing: 1px; opacity: 0.8; margin-bottom: 4px; }
-    .ecard-value { font-size: 16px; font-weight: 600; }
-    .ecard-meds { font-size: 14px; line-height: 1.6; }
-    .ecard-warning { background: rgba(255,255,255,0.2); border-radius: var(--radius-sm); padding: 10px 12px; font-size: 13px; margin-top: 8px; }
-    .ecard-warning-icon { margin-right: 4px; }
-    .ecard-footer { text-align: center; font-size: 11px; opacity: 0.7; margin-top: 12px; }
-    .edit-hint { text-align: center; font-size: 13px; color: var(--gray-400); margin: 16px 0; }
+    .acard {
+      background: linear-gradient(135deg, var(--brand-50, #fff5f5), #fff);
+      border: 2px solid var(--brand-200);
+      color: var(--gray-800);
+      border-radius: 18px; padding: 20px; margin-bottom: 16px;
+    }
+    .acard-title { font-size: 20px; font-weight: 800; text-align: center; margin-bottom: 4px; letter-spacing: 1.5px; color: var(--brand-700); }
+    .acard-subtitle { text-align: center; font-size: 13px; color: var(--gray-600); margin-bottom: 18px; }
+    .acard-section {
+      background: var(--white); border-radius: 12px;
+      padding: 12px 14px; margin-bottom: 10px;
+      border: 1px solid var(--gray-200);
+    }
+    .acard-label { font-size: 11px; font-weight: 700; letter-spacing: 1px; color: var(--gray-500); margin-bottom: 4px; }
+    .acard-value { font-size: 16px; font-weight: 600; color: var(--gray-800); }
+    .acard-meds { font-size: 14px; line-height: 1.7; }
+    .acard-meds .pill { display: inline-block; width: 6px; height: 6px; border-radius: 50%; background: var(--brand-400); margin-right: 6px; vertical-align: middle; }
+    .acard-warning {
+      background: #fef9c3; border: 1px solid #fde68a;
+      border-radius: 10px; padding: 10px 12px; font-size: 13px;
+      margin-top: 8px; color: #78350f; line-height: 1.5;
+    }
+    .acard-warning-icon { margin-right: 6px; color: #d97706; }
+    .acard-footer { text-align: center; font-size: 11px; color: var(--gray-500); margin-top: 12px; }
+    .edit-hint { text-align: center; font-size: 13px; color: var(--gray-500); margin: 16px 0; }
   </style>
 </head>
 <body>
-  <div class="header" style="background: linear-gradient(135deg, #dc2626, #b91c1c);">
+  <div class="header" id="page-header">
     <button class="header-back" onclick="location.href='/?disease='+getDiseaseId()">&larr;</button>
-    <h1>緊急情報カード</h1>
+    <h1>あんしんカード</h1>
   </div>
 
   <div class="content">
     <div id="card-container">
       <div class="loading"><div class="loading-spinner"></div><p class="mt-8 text-sm text-muted">読み込み中...</p></div>
     </div>
-    <p class="edit-hint">この画面を救急隊員・医師に見せてください</p>
+    <p class="edit-hint">この画面を医師・救急隊員に見せると、自分のことがすぐ伝わります</p>
   </div>
 
   <script src="https://static.line-scdn.net/liff/edge/2/sdk.js" defer></script>
@@ -38,6 +53,7 @@
     document.addEventListener("DOMContentLoaded", async () => {
       try {
         const { template } = await initLiff();
+        if (template.color) document.getElementById("page-header").style.background = `linear-gradient(135deg, ${template.color}, ${template.color}dd)`;
         const summary = await apiGet("/api/summary");
         renderCard(template, summary);
       } catch (err) {
@@ -52,22 +68,22 @@
       const eConfig = template.emergencyConfig || {};
       const container = document.getElementById("card-container");
 
-      let html = '<div class="ecard">';
-      html += `<div class="ecard-title">&#9888; 緊急情報カード</div>`;
-      html += `<div class="ecard-subtitle">${escapeHtml(eConfig.subtitle || template.name)}</div>`;
+      let html = '<div class="acard">';
+      html += `<div class="acard-title">あんしんカード</div>`;
+      html += `<div class="acard-subtitle">${escapeHtml(eConfig.subtitle || template.name)}</div>`;
 
       // 疾患名・診断日
-      html += `<div class="ecard-section">
-        <div class="ecard-label">疾患名</div>
-        <div class="ecard-value">${escapeHtml(profile?.diagnosisName || template.name)}</div>
-        ${profile?.diagnosisDate ? `<div style="font-size:13px; opacity:0.8; margin-top:2px">診断日: ${formatDate(profile.diagnosisDate)}</div>` : ""}
+      html += `<div class="acard-section">
+        <div class="acard-label">病気の名前</div>
+        <div class="acard-value">${escapeHtml(profile?.diagnosisName || template.name)}</div>
+        ${profile?.diagnosisDate ? `<div style="font-size:12px; color:var(--gray-500); margin-top:2px">診断日: ${formatDate(profile.diagnosisDate)}</div>` : ""}
       </div>`;
 
       // 現在の服用薬
       if (activeMedications && activeMedications.length > 0) {
-        html += '<div class="ecard-section"><div class="ecard-label">現在の処方薬</div><div class="ecard-meds">';
+        html += '<div class="acard-section"><div class="acard-label">いま飲んでいる薬</div><div class="acard-meds">';
         activeMedications.forEach((med) => {
-          html += `<div>&#128138; <strong>${escapeHtml(med.name)}</strong>${med.dosageForm ? " (" + escapeHtml(med.dosageForm) + ")" : ""}</div>`;
+          html += `<div><span class="pill"></span><strong>${escapeHtml(med.name)}</strong>${med.dosageForm ? " (" + escapeHtml(med.dosageForm) + ")" : ""}</div>`;
         });
         html += '</div></div>';
       }
@@ -75,18 +91,20 @@
       // 疾患固有フィールド
       if (eConfig.fields) {
         eConfig.fields.forEach((f) => {
-          html += `<div class="ecard-section"><div class="ecard-label">${escapeHtml(f.label)}</div><div class="ecard-value">${escapeHtml(f.placeholder)}</div></div>`;
+          html += `<div class="acard-section"><div class="acard-label">${escapeHtml(f.label)}</div><div class="acard-value">${escapeHtml(f.placeholder)}</div></div>`;
         });
       }
 
-      // 注意事項
+      // 注意事項（医師に伝えたいこと）
       if (eConfig.warnings && eConfig.warnings.length > 0) {
+        html += `<div class="acard-section"><div class="acard-label">医師に伝えたいこと</div>`;
         eConfig.warnings.forEach((w) => {
-          html += `<div class="ecard-warning"><span class="ecard-warning-icon">&#9888;</span>${escapeHtml(w)}</div>`;
+          html += `<div class="acard-warning"><span class="acard-warning-icon material-symbols-outlined" style="font-size:14px;vertical-align:middle;">info</span>${escapeHtml(w)}</div>`;
         });
+        html += `</div>`;
       }
 
-      html += '<div class="ecard-footer">よりそい PHR 緊急情報カード</div>';
+      html += '<div class="acard-footer">よりそい あんしんカード</div>';
       html += '</div>';
 
       container.innerHTML = html;

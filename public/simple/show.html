@@ -102,9 +102,37 @@
       color: var(--gray-700); font-size: 13px; font-weight: 600; cursor: pointer;
     }
 
+    /* 空状態ガイド */
+    .empty-guide-show {
+      text-align: center; padding: 40px 24px;
+      background: var(--white); border-radius: 16px;
+      border: 2px dashed var(--brand-200); margin: 20px 16px;
+    }
+    .empty-guide-show .big-icon { font-size: 56px; color: var(--brand-300); }
+    .empty-guide-show h3 { font-size: 17px; margin-top: 8px; letter-spacing: 1px; }
+    .empty-guide-show p { font-size: 13px; color: var(--gray-600); margin-top: 8px; line-height: 1.6; }
+    .empty-guide-show .cta {
+      display: inline-block; margin-top: 16px;
+      padding: 12px 24px; background: var(--brand-500); color: #fff;
+      border-radius: 24px; font-weight: 700; text-decoration: none; font-size: 14px;
+    }
+
+    /* FAB */
+    .fab-record {
+      position: fixed; bottom: 24px; right: 24px;
+      display: flex; align-items: center; gap: 8px;
+      padding: 14px 20px; border-radius: 30px;
+      background: var(--brand-500); color: #fff;
+      box-shadow: 0 6px 16px rgba(244,167,176,0.5);
+      text-decoration: none; font-weight: 700; font-size: 15px; letter-spacing: 1px;
+      cursor: pointer; transition: all 0.15s; z-index: 50;
+    }
+    .fab-record:active { transform: scale(0.96); }
+    .fab-record .material-symbols-outlined { font-size: 20px; }
+
     /* 印刷用 */
     @media print {
-      .tabs, .ai-summary-btn, .print-btn, .back-btn { display: none !important; }
+      .tabs, .ai-summary-btn, .print-btn, .back-btn, .fab-record { display: none !important; }
       .tab-content { display: block !important; padding: 8px; }
       body { background: #fff; }
       .panel { box-shadow: none; border: 1px solid #ddd; page-break-inside: avoid; }
@@ -117,9 +145,17 @@
     <h1>みせる</h1>
   </div>
 
-  <div class="tabs">
+  <div class="tabs" id="show-tabs">
     <button class="tab active" data-tab="here">この病院向け</button>
     <button class="tab" data-tab="all">すべての科</button>
+  </div>
+
+  <!-- 空状態ガイド -->
+  <div id="show-empty-guide" class="empty-guide-show" style="display:none;">
+    <span class="material-symbols-outlined big-icon">co_present</span>
+    <h3>まだ受診の記録がありません</h3>
+    <p>受診を1件でも記録すると、<br>ここで医師に見せる画面が作れます。</p>
+    <a class="cta" id="empty-guide-cta" href="/simple/record.html?type=visit">+ 受診を記録する</a>
   </div>
 
   <!-- タブA: この病院向け -->
@@ -171,6 +207,10 @@
   <button class="print-btn" onclick="window.print()">この画面を印刷する</button>
   <p class="footer-note">この画面を医師に見せています</p>
 
+  <a class="fab-record" id="fab-record" href="/simple/record.html">
+    <span class="material-symbols-outlined">add</span>記録する
+  </a>
+
   <script src="https://static.line-scdn.net/liff/edge/2/sdk.js" defer></script>
   <script src="/js/liff-init.js"></script>
   <script>
@@ -206,6 +246,7 @@
 
       const q = "?disease=" + encodeURIComponent(ctx.diseaseId);
       document.getElementById("back-btn").onclick = () => location.href = "/" + q;
+      document.getElementById("fab-record").href = "/simple/record.html" + q;
 
       // タブ切替
       document.querySelectorAll(".tab").forEach((tab) => {
@@ -230,6 +271,19 @@
       allMeds = Array.isArray(meds) ? meds : (meds.medications || []);
       allLabs = (Array.isArray(labs) ? labs : (labs.labs || []))
         .slice().sort((a, b) => (b.date || "").localeCompare(a.date || ""));
+
+      // visits 0件なら空状態ガイドを表示してタブ・印刷ボタン等を隠す
+      if (!allVisits.length) {
+        const q = "?disease=" + encodeURIComponent(ctx.diseaseId);
+        document.getElementById("empty-guide-cta").href = "/simple/record.html" + q + "&type=visit";
+        document.getElementById("show-empty-guide").style.display = "block";
+        document.getElementById("show-tabs").style.display = "none";
+        document.getElementById("tab-here").style.display = "none";
+        document.getElementById("tab-all").style.display = "none";
+        document.querySelector(".print-btn").style.display = "none";
+        document.querySelector(".footer-note").style.display = "none";
+        return;
+      }
 
       // 初期選択クリニック: 直近受診の clinicId、なければ Primary、なければ最初
       const recent = allVisits[0];
