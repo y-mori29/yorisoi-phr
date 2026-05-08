@@ -117,6 +117,7 @@
     { "id": "mri", "label": "MRI", "color": "#c7d2fe" },
     { "id": "hospitalization", "label": "入院", "color": "#fde68a" },
     { "id": "rehabilitation", "label": "リハビリ", "color": "#fed7aa" },
+    { "id": "self-log", "label": "じぶんメモ", "color": "#e0f2fe" },
     { "id": "other", "label": "その他", "color": "#e5e5e5" }
   ]
 }

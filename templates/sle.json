@@ -237,6 +237,7 @@
     { "id": "exam", "label": "検査", "color": "#e9d5ff" },
     { "id": "hospitalization", "label": "入院", "color": "#fde68a" },
     { "id": "treatment_change", "label": "治療方針変更", "color": "#ffedd5" },
+    { "id": "self-log", "label": "じぶんメモ", "color": "#e0f2fe" },
     { "id": "other", "label": "その他", "color": "#e5e5e5" }
   ]
 }

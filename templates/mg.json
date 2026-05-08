@@ -118,6 +118,7 @@
     { "id": "ivig", "label": "IVIG", "color": "#bae6fd" },
     { "id": "thymectomy", "label": "胸腺摘出", "color": "#fecaca" },
     { "id": "exam", "label": "検査", "color": "#e9d5ff" },
+    { "id": "self-log", "label": "じぶんメモ", "color": "#e0f2fe" },
     { "id": "other", "label": "その他", "color": "#e5e5e5" }
   ]
 }

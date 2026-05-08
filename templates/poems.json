@@ -379,6 +379,7 @@
     { "id": "thrombosis", "label": "血栓イベント", "color": "#fca5a5" },
     { "id": "remission", "label": "寛解判定", "color": "#bbf7d0" },
     { "id": "relapse", "label": "再発", "color": "#fca5a5" },
+    { "id": "self-log", "label": "じぶんメモ", "color": "#e0f2fe" },
     { "id": "other", "label": "その他", "color": "#e5e5e5" }
   ]
 }

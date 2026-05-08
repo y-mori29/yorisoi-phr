@@ -356,6 +356,7 @@
     { "id": "hearing_check", "label": "聴力検査・補聴", "color": "#fef3c7" },
     { "id": "dental", "label": "歯科処置", "color": "#fde68a" },
     { "id": "hospitalization", "label": "入院", "color": "#fde68a" },
+    { "id": "self-log", "label": "じぶんメモ", "color": "#e0f2fe" },
     { "id": "other", "label": "その他", "color": "#e5e5e5" }
   ]
 }
