@@ -71,6 +71,19 @@ const DEMO_DATA = {
       { id: "l4", date: "2025-06-01", values: { crp: 0.45, hb: 12.9, wbc: 7100, alb: 3.8, plt: 28 } },
       { id: "l5", date: "2025-03-01", values: { crp: 0.22, hb: 13.5, wbc: 6000, alb: 4.2, plt: 23 } },
     ],
+    clinics: [
+      { id: "c1", name: "△△クリニック IBD外来", address: "東京都世田谷区", phone: "03-1234-5678", departments: ["消化器内科"], isPrimary: true, note: "メインのかかりつけ。月1回フォロー。" },
+      { id: "c2", name: "○○大学病院 消化器内科", address: "東京都文京区", phone: "03-3815-5411", departments: ["消化器内科", "大腸肛門外科"], isPrimary: false, note: "確定診断・大腸内視鏡検査の拠点。" },
+      { id: "c3", name: "やまもとリウマチ内科", address: "東京都渋谷区", phone: "", departments: ["リウマチ科"], isPrimary: false, note: "末梢関節炎の合併確認・フォロー。" },
+      { id: "c4", name: "近藤皮膚科クリニック", address: "東京都世田谷区", phone: "", departments: ["皮膚科"], isPrimary: false, note: "口内炎・皮疹の相談。" },
+    ],
+    visits: [
+      { id: "v1", date: "2025-12-01", clinicId: "c1", department: "消化器内科", doctor: "佐藤 太郎", chiefComplaint: "転院後の初回受診", findings: "リアルダ継続で寛解維持。便通安定、出血なし。", nextAction: "次回3ヶ月後。CRP・血液検査を継続。", photos: [], relatedMedicationIds: ["m1"], relatedLabResultIds: ["l2"], relatedTimelineEventId: "ev10" },
+      { id: "v2", date: "2026-03-15", clinicId: "c1", department: "消化器内科", doctor: "佐藤 太郎", chiefComplaint: "定期診察", findings: "CRP 0.12 と寛解維持。腹痛なし、排便良好。", nextAction: "リアルダ継続。次回6ヶ月後に内視鏡予定。", photos: [], relatedMedicationIds: ["m1"], relatedLabResultIds: ["l1"], relatedTimelineEventId: null },
+      { id: "v3", date: "2024-05-15", clinicId: "c2", department: "消化器内科", doctor: "山田 花子", chiefComplaint: "定期内視鏡", findings: "粘膜治癒確認。寛解維持継続。", nextAction: "1年後に再検査。", photos: [], relatedMedicationIds: [], relatedLabResultIds: [], relatedTimelineEventId: "ev9" },
+      { id: "v4", date: "2025-08-10", clinicId: "c3", department: "リウマチ科", doctor: "山本 健", chiefComplaint: "膝関節の痛み", findings: "末梢関節炎の合併。左膝に軽度滑膜炎。リウマトイド因子陰性。", nextAction: "NSAIDs頓用。次回2ヶ月後にフォロー。", photos: [], relatedMedicationIds: [], relatedLabResultIds: [], relatedTimelineEventId: null },
+      { id: "v5", date: "2025-11-20", clinicId: "c4", department: "皮膚科", doctor: "近藤 一郎", chiefComplaint: "口内炎が繰り返す", findings: "アフタ性口内炎。UC関連の腸管外症状の可能性。", nextAction: "口腔ケア・トリアムシノロン軟膏。再燃時は消化器内科へ報告。", photos: [], relatedMedicationIds: [], relatedLabResultIds: [], relatedTimelineEventId: null },
+    ],
   },
 
   parkinson: {
@@ -97,6 +110,19 @@ const DEMO_DATA = {
     labResults: [
       { id: "l1", date: "2026-02-01", values: { tsh: 2.1, ast: 22, alt: 18, bun: 15, cre: 0.9 } },
       { id: "l2", date: "2025-08-01", values: { tsh: 1.8, ast: 25, alt: 20, bun: 16, cre: 0.85 } },
+    ],
+    clinics: [
+      { id: "c1", name: "○○大学病院 神経内科", address: "千葉県千葉市", phone: "043-222-7171", departments: ["脳神経内科"], isPrimary: true, note: "確定診断・薬剤調整のメイン。3ヶ月毎。" },
+      { id: "c2", name: "リハビリセンターひかり", address: "千葉県千葉市", phone: "", departments: ["リハビリテーション科"], isPrimary: false, note: "PT/OT/ST 週2回。" },
+      { id: "c3", name: "桜泌尿器科クリニック", address: "千葉県千葉市", phone: "", departments: ["泌尿器科"], isPrimary: false, note: "排尿障害（自律神経症状）のフォロー。" },
+      { id: "c4", name: "ハート心療内科", address: "千葉県千葉市", phone: "", departments: ["心療内科"], isPrimary: false, note: "うつ症状・睡眠障害の相談。" },
+    ],
+    visits: [
+      { id: "v1", date: "2026-02-01", clinicId: "c1", department: "脳神経内科", doctor: "中村 大輔", chiefComplaint: "ウェアリングオフが少し短い", findings: "オフ時間 1日2時間程度。L-DOPA併用のエクフィナで効果良好。H&Y Stage 2維持。", nextAction: "現薬継続。3ヶ月後フォロー。リハ継続。", photos: [], relatedMedicationIds: ["m1", "m2"], relatedLabResultIds: ["l1"], relatedTimelineEventId: null },
+      { id: "v2", date: "2025-08-01", clinicId: "c1", department: "脳神経内科", doctor: "中村 大輔", chiefComplaint: "歩行時のすくみ少し増加", findings: "オン時のADLは保たれる。バランス訓練継続を推奨。", nextAction: "リハに歩行訓練追加。次回6ヶ月後。", photos: [], relatedMedicationIds: ["m1"], relatedLabResultIds: ["l2"], relatedTimelineEventId: null },
+      { id: "v3", date: "2025-01-10", clinicId: "c2", department: "リハビリテーション科", doctor: "光 美香", chiefComplaint: "リハビリ初回", findings: "歩行速度・バランス評価。Berg Balance Scale 48/56。", nextAction: "週2回のPT・OT。バランス訓練・歩行訓練中心。", photos: [], relatedMedicationIds: [], relatedLabResultIds: [], relatedTimelineEventId: "ev7" },
+      { id: "v4", date: "2025-11-15", clinicId: "c3", department: "泌尿器科", doctor: "桜井 修", chiefComplaint: "夜間頻尿、尿の出しづらさ", findings: "神経因性膀胱。残尿量50mL程度。", nextAction: "ベタニス処方。3ヶ月後フォロー。水分摂取の指導。", photos: [], relatedMedicationIds: [], relatedLabResultIds: [], relatedTimelineEventId: null },
+      { id: "v5", date: "2025-10-05", clinicId: "c4", department: "心療内科", doctor: "ハート 慶子", chiefComplaint: "気分が落ち込む、寝つき悪い", findings: "PD関連うつの可能性。HAM-D 10点。", nextAction: "ミルタザピン少量で開始。睡眠衛生指導。1ヶ月後フォロー。", photos: [], relatedMedicationIds: [], relatedLabResultIds: [], relatedTimelineEventId: null },
     ],
   },
 
@@ -126,6 +152,19 @@ const DEMO_DATA = {
       { id: "l2", date: "2025-12-01", values: { crp: 0.08, "anti-dsDNA": 15, c3: 90, c4: 20, eGFR: 82, uProtein: 0.12 } },
       { id: "l3", date: "2025-09-01", values: { crp: 0.03, "anti-dsDNA": 10, c3: 98, c4: 24, eGFR: 88, uProtein: 0.08 } },
     ],
+    clinics: [
+      { id: "c1", name: "○○大学病院 膠原病・リウマチ内科", address: "東京都新宿区", phone: "03-3353-1211", departments: ["膠原病内科"], isPrimary: true, note: "SLEメイン主治医。3ヶ月毎に補体・抗dsDNA確認。" },
+      { id: "c2", name: "○○大学病院 腎臓内科", address: "東京都新宿区", phone: "03-3353-1211", departments: ["腎臓内科"], isPrimary: false, note: "ループス腎炎フォロー。半年に1回。" },
+      { id: "c3", name: "みなみ皮膚科", address: "東京都新宿区", phone: "", departments: ["皮膚科"], isPrimary: false, note: "蝶形紅斑・脱毛・日光過敏のフォロー。" },
+      { id: "c4", name: "中野眼科クリニック", address: "東京都中野区", phone: "", departments: ["眼科"], isPrimary: false, note: "プラケニル網膜症スクリーニング 年1回。" },
+    ],
+    visits: [
+      { id: "v1", date: "2026-03-01", clinicId: "c1", department: "膠原病内科", doctor: "新宿 健", chiefComplaint: "倦怠感は安定", findings: "抗dsDNA 12 IU/mL、補体正常。SLEDAI 0点。寛解維持。", nextAction: "PSL 5mg・MMF 2g・HCQ 200mg 継続。次回3ヶ月後。", photos: [], relatedMedicationIds: [], relatedLabResultIds: ["l1"], relatedTimelineEventId: "ev7" },
+      { id: "v2", date: "2025-12-01", clinicId: "c1", department: "膠原病内科", doctor: "新宿 健", chiefComplaint: "風邪気味だった", findings: "感染契機の再燃なし。補体・抗dsDNA軽度動くが範囲内。", nextAction: "現薬継続。感染対策を継続。", photos: [], relatedMedicationIds: [], relatedLabResultIds: ["l2"], relatedTimelineEventId: null },
+      { id: "v3", date: "2025-10-15", clinicId: "c2", department: "腎臓内科", doctor: "腎沼 太郎", chiefComplaint: "腎機能のフォロー", findings: "尿蛋白 0.10 g/gCr、eGFR 85。腎炎寛解維持。", nextAction: "半年後に再評価。MMF継続。", photos: [], relatedMedicationIds: [], relatedLabResultIds: [], relatedTimelineEventId: null },
+      { id: "v4", date: "2025-11-20", clinicId: "c3", department: "皮膚科", doctor: "南 桜子", chiefComplaint: "頬の赤みが少し強い", findings: "軽度蝶形紅斑。日光暴露の影響。", nextAction: "ステロイド外用（弱め）短期。日焼け止め徹底。", photos: [], relatedMedicationIds: [], relatedLabResultIds: [], relatedTimelineEventId: null },
+      { id: "v5", date: "2026-01-15", clinicId: "c4", department: "眼科", doctor: "中野 修", chiefComplaint: "プラケニル網膜症のスクリーニング", findings: "OCT・視野・眼底とも異常なし。", nextAction: "次回1年後。HCQ継続でOK。", photos: [], relatedMedicationIds: [], relatedLabResultIds: [], relatedTimelineEventId: null },
+    ],
   },
 
   t1d: {
@@ -151,6 +190,19 @@ const DEMO_DATA = {
       { id: "l2", date: "2025-09-01", values: { hba1c: 7.1, eGFR: 97, uAlb: 5, tcho: 178, ldl: 98 } },
       { id: "l3", date: "2025-03-01", values: { hba1c: 6.9, eGFR: 96, uAlb: 6, tcho: 190, ldl: 105 } },
     ],
+    clinics: [
+      { id: "c1", name: "東京糖尿病センター", address: "東京都千代田区", phone: "03-1111-2222", departments: ["内分泌・代謝科"], isPrimary: true, note: "1型糖尿病のメイン主治医。3ヶ月毎にHbA1c・CGMレポート確認。" },
+      { id: "c2", name: "○○眼科クリニック", address: "東京都千代田区", phone: "", departments: ["眼科"], isPrimary: false, note: "糖尿病網膜症スクリーニング年1回。" },
+      { id: "c3", name: "千代田腎臓内科", address: "東京都千代田区", phone: "", departments: ["腎臓内科"], isPrimary: false, note: "微量アルブミン尿フォロー。" },
+      { id: "c4", name: "ハッピー産婦人科", address: "東京都千代田区", phone: "", departments: ["産婦人科"], isPrimary: false, note: "周期に合わせた血糖管理相談。" },
+    ],
+    visits: [
+      { id: "v1", date: "2026-03-01", clinicId: "c1", department: "内分泌・代謝科", doctor: "東京 太郎", chiefComplaint: "ポンプ療法のフォロー", findings: "HbA1c 6.8%、TIR 78%、TBR 1.2%。AID良好。", nextAction: "現設定継続。次回3ヶ月後。低血糖頻度に注意。", photos: [], relatedMedicationIds: ["m1"], relatedLabResultIds: ["l1"], relatedTimelineEventId: null },
+      { id: "v2", date: "2025-09-01", clinicId: "c1", department: "内分泌・代謝科", doctor: "東京 太郎", chiefComplaint: "深夜の高血糖が気になる", findings: "HbA1c 7.1%。基礎レート 02:00-04:00 を上方修正。", nextAction: "1ヶ月後にCGMで再評価。", photos: [], relatedMedicationIds: [], relatedLabResultIds: ["l2"], relatedTimelineEventId: null },
+      { id: "v3", date: "2025-04-10", clinicId: "c2", department: "眼科", doctor: "佐々木 麗", chiefComplaint: "年1回の眼底検査", findings: "網膜症なし。両眼異常なし。", nextAction: "次回1年後。", photos: [], relatedMedicationIds: [], relatedLabResultIds: [], relatedTimelineEventId: "ev6" },
+      { id: "v4", date: "2025-10-20", clinicId: "c3", department: "腎臓内科", doctor: "千代田 翔", chiefComplaint: "腎機能フォロー", findings: "eGFR 95、微量アルブミン尿なし。", nextAction: "次回1年後。SGLT2阻害薬の検討は将来的に。", photos: [], relatedMedicationIds: [], relatedLabResultIds: [], relatedTimelineEventId: null },
+      { id: "v5", date: "2025-11-30", clinicId: "c4", department: "産婦人科", doctor: "幸田 ハッピー", chiefComplaint: "妊娠の相談", findings: "プレコンセプションケア。HbA1c目標6.5%未満で妊娠許可。", nextAction: "葉酸補充開始。3ヶ月後フォロー。", photos: [], relatedMedicationIds: [], relatedLabResultIds: [], relatedTimelineEventId: null },
+    ],
   },
 
   crohn: {
@@ -175,6 +227,19 @@ const DEMO_DATA = {
       { id: "l2", date: "2025-12-05", values: { crp: 0.22, hb: 13.2, wbc: 6500, alb: 3.9, esr: 12, plt: 27, ferritin: 72, ca: 9.1 } },
       { id: "l3", date: "2025-09-01", values: { crp: 0.18, hb: 13.8, wbc: 5900, alb: 4.1, esr: 10, plt: 24, ferritin: 95, ca: 9.3 } },
     ],
+    clinics: [
+      { id: "c1", name: "○○大学病院 IBDセンター", address: "東京都文京区", phone: "03-3815-5411", departments: ["消化器内科"], isPrimary: true, note: "クローン病のメイン。8週ごとステラーラ自己注の指導。" },
+      { id: "c2", name: "東京大腸肛門外科", address: "東京都台東区", phone: "", departments: ["大腸肛門外科"], isPrimary: false, note: "肛門病変・痔瘻のフォロー。" },
+      { id: "c3", name: "あおぞら皮膚科", address: "東京都文京区", phone: "", departments: ["皮膚科"], isPrimary: false, note: "結節性紅斑・口内炎などの腸管外症状。" },
+      { id: "c4", name: "上野栄養クリニック", address: "東京都台東区", phone: "", departments: ["栄養指導"], isPrimary: false, note: "エレンタール継続支援・食事相談。" },
+    ],
+    visits: [
+      { id: "v1", date: "2026-03-10", clinicId: "c1", department: "消化器内科", doctor: "本郷 健", chiefComplaint: "腹痛なく排便良好", findings: "CRP 0.15、Alb 4.0。寛解維持。MRE所見なし。", nextAction: "ステラーラ8週ごと継続。エレンタール就寝前1包。次回3ヶ月後。", photos: [], relatedMedicationIds: ["m1", "m3"], relatedLabResultIds: ["l1"], relatedTimelineEventId: "ev7" },
+      { id: "v2", date: "2025-12-05", clinicId: "c1", department: "消化器内科", doctor: "本郷 健", chiefComplaint: "微熱が続いた", findings: "感染除外。CRP 0.22。再燃の兆候なし。", nextAction: "現薬継続。発熱時は感染も考慮し相談。", photos: [], relatedMedicationIds: [], relatedLabResultIds: ["l2"], relatedTimelineEventId: null },
+      { id: "v3", date: "2025-08-20", clinicId: "c2", department: "大腸肛門外科", doctor: "台東 達也", chiefComplaint: "肛門周囲の違和感", findings: "痔瘻なし。皮垂のみ。経過観察。", nextAction: "セルフケア指導。再増悪時は再診。", photos: [], relatedMedicationIds: [], relatedLabResultIds: [], relatedTimelineEventId: null },
+      { id: "v4", date: "2025-10-12", clinicId: "c3", department: "皮膚科", doctor: "青空 洋子", chiefComplaint: "下腿の赤いしこり", findings: "結節性紅斑。CD関連腸管外症状。", nextAction: "局所外用＋NSAIDs短期。消化器内科に共有。", photos: [], relatedMedicationIds: [], relatedLabResultIds: [], relatedTimelineEventId: null },
+      { id: "v5", date: "2025-11-18", clinicId: "c4", department: "栄養指導", doctor: "上野 まり", chiefComplaint: "エレンタール継続のコツ", findings: "1日1包就寝前で継続。フレーバー工夫の提案。", nextAction: "次回6ヶ月後。困ったら都度相談。", photos: [], relatedMedicationIds: ["m3"], relatedLabResultIds: [], relatedTimelineEventId: null },
+    ],
   },
 
   ra: {
@@ -197,6 +262,19 @@ const DEMO_DATA = {
       { id: "l2", date: "2025-12-10", values: { crp: 0.12, esr: 12, rf: 50, accp: 85, mmp3: 75, hb: 12.9, plt: 26, alt: 25, cre: 0.88, egfr: 76 } },
       { id: "l3", date: "2025-09-05", values: { crp: 0.15, esr: 14, rf: 48, accp: 80, mmp3: 82, hb: 13.0, plt: 24, alt: 20, cre: 0.90, egfr: 74 } },
     ],
+    clinics: [
+      { id: "c1", name: "○○リウマチクリニック", address: "神奈川県横浜市", phone: "045-111-2222", departments: ["リウマチ科"], isPrimary: true, note: "RAメイン主治医。MTX・エンブレル管理。月1回。" },
+      { id: "c2", name: "横浜整形外科病院", address: "神奈川県横浜市", phone: "045-333-4444", departments: ["整形外科"], isPrimary: false, note: "関節破壊フォロー・手指機能評価。" },
+      { id: "c3", name: "みなと眼科", address: "神奈川県横浜市", phone: "", departments: ["眼科"], isPrimary: false, note: "強膜炎・ドライアイのフォロー。" },
+      { id: "c4", name: "横浜歯科口腔外科", address: "神奈川県横浜市", phone: "", departments: ["歯科"], isPrimary: false, note: "MTX・bDMARD服用中の歯科治療相談。" },
+    ],
+    visits: [
+      { id: "v1", date: "2026-03-15", clinicId: "c1", department: "リウマチ科", doctor: "横浜 玲子", chiefComplaint: "朝のこわばり10分程度", findings: "DAS28-CRP 1.8。寛解維持。CRP 0.08。", nextAction: "MTX 8mg/週、エンブレル週1継続。次回1ヶ月後。", photos: [], relatedMedicationIds: ["m1", "m2"], relatedLabResultIds: ["l1"], relatedTimelineEventId: null },
+      { id: "v2", date: "2025-12-10", clinicId: "c1", department: "リウマチ科", doctor: "横浜 玲子", chiefComplaint: "問題なく経過", findings: "DAS28-CRP 1.9。LDA維持。MMP-3軽度上昇。", nextAction: "MTX減量検討は次回。エンブレル継続。", photos: [], relatedMedicationIds: ["m1", "m2"], relatedLabResultIds: ["l2"], relatedTimelineEventId: "ev6" },
+      { id: "v3", date: "2025-09-05", clinicId: "c1", department: "リウマチ科", doctor: "横浜 玲子", chiefComplaint: "右手指朝のこわばり少し", findings: "右第3MCP 軽度腫脹。エコーで滑膜炎軽度。", nextAction: "現薬継続。3ヶ月後再評価。", photos: [], relatedMedicationIds: [], relatedLabResultIds: ["l3"], relatedTimelineEventId: null },
+      { id: "v4", date: "2025-10-25", clinicId: "c2", department: "整形外科", doctor: "整形 信", chiefComplaint: "右手親指の付け根の痛み", findings: "CM関節症の合併。手指機能は良好。", nextAction: "テーピング・装具指導。痛み時はカロナール。", photos: [], relatedMedicationIds: [], relatedLabResultIds: [], relatedTimelineEventId: null },
+      { id: "v5", date: "2025-11-08", clinicId: "c3", department: "眼科", doctor: "港 明子", chiefComplaint: "目の乾きが強い", findings: "シェーグレン合併考慮。BUT 5秒、SchirmerI 5mm。", nextAction: "ヒアレイン点眼1日4回。3ヶ月後フォロー。", photos: [], relatedMedicationIds: [], relatedLabResultIds: [], relatedTimelineEventId: null },
+    ],
   },
 
   ms: {
@@ -217,6 +295,19 @@ const DEMO_DATA = {
     labResults: [
       { id: "l1", date: "2026-03-01", values: { wbc: 5800, lymph: 1450, jcv: 0.3, igg: 1200, alt: 22, ast: 20, cre: 0.8, vitd: 35 } },
       { id: "l2", date: "2025-09-01", values: { wbc: 6000, lymph: 1500, jcv: 0.35, igg: 1180, alt: 25, ast: 22, cre: 0.82, vitd: 28 } },
+    ],
+    clinics: [
+      { id: "c1", name: "○○MSセンター 脳神経内科", address: "京都府京都市", phone: "075-111-2222", departments: ["脳神経内科"], isPrimary: true, note: "MS拠点病院。3ヶ月毎にDMTフォロー。" },
+      { id: "c2", name: "京都眼科クリニック", address: "京都府京都市", phone: "", departments: ["眼科"], isPrimary: false, note: "視神経炎再発時の評価。" },
+      { id: "c3", name: "嵐山泌尿器科", address: "京都府京都市", phone: "", departments: ["泌尿器科"], isPrimary: false, note: "排尿障害（神経因性膀胱）のフォロー。" },
+      { id: "c4", name: "東山リハセンター", address: "京都府京都市", phone: "", departments: ["リハビリテーション科"], isPrimary: false, note: "歩行・バランス訓練 月2回。" },
+    ],
+    visits: [
+      { id: "v1", date: "2026-03-01", clinicId: "c1", department: "脳神経内科", doctor: "京都 桜", chiefComplaint: "新規症状なし", findings: "EDSS 2.0維持。MRI新規病変なし。リンパ球 1450/μL。", nextAction: "テクフィデラ継続。次回3ヶ月後にMRI予定。", photos: [], relatedMedicationIds: ["m1"], relatedLabResultIds: ["l1"], relatedTimelineEventId: null },
+      { id: "v2", date: "2025-09-01", clinicId: "c1", department: "脳神経内科", doctor: "京都 桜", chiefComplaint: "再発徴候なし", findings: "JCV抗体陰性。リンパ球 1500。テクフィデラ忍容性良好。", nextAction: "現薬継続。VitD補充も継続。", photos: [], relatedMedicationIds: [], relatedLabResultIds: ["l2"], relatedTimelineEventId: "ev7" },
+      { id: "v3", date: "2025-06-10", clinicId: "c2", department: "眼科", doctor: "宇治 美咲", chiefComplaint: "視野定期検査", findings: "OCT・視野とも左視神経委縮所見残るが進行なし。", nextAction: "1年後フォロー。違和感あれば即受診。", photos: [], relatedMedicationIds: [], relatedLabResultIds: [], relatedTimelineEventId: null },
+      { id: "v4", date: "2025-11-15", clinicId: "c3", department: "泌尿器科", doctor: "嵐山 仁", chiefComplaint: "頻尿が気になる", findings: "残尿少量。神経因性膀胱の傾向。", nextAction: "ベタニス開始。3ヶ月後フォロー。", photos: [], relatedMedicationIds: [], relatedLabResultIds: [], relatedTimelineEventId: null },
+      { id: "v5", date: "2025-12-20", clinicId: "c4", department: "リハビリテーション科", doctor: "東山 リカ", chiefComplaint: "リハ評価", findings: "10m歩行・TUGとも改善傾向。バランスやや低下。", nextAction: "週1回PT継続。バランス訓練追加。", photos: [], relatedMedicationIds: [], relatedLabResultIds: [], relatedTimelineEventId: null },
     ],
   },
 
@@ -240,6 +331,19 @@ const DEMO_DATA = {
       { id: "l1", date: "2026-02-20", values: { achr: 8.5, musk: 0.02, ck: 120, tsh: 2.1, ft4: 1.2, wbc: 7200, lymph: 1800, igg: 1050 } },
       { id: "l2", date: "2025-08-20", values: { achr: 9.2, musk: 0.02, ck: 135, tsh: 2.3, ft4: 1.1, wbc: 7500, lymph: 1850, igg: 1080 } },
     ],
+    clinics: [
+      { id: "c1", name: "○○大学病院 脳神経内科 MGクリニック", address: "愛知県名古屋市", phone: "052-111-2222", departments: ["脳神経内科"], isPrimary: true, note: "MG拠点。ソリリス点滴2週ごと管理。" },
+      { id: "c2", name: "名古屋胸部外科", address: "愛知県名古屋市", phone: "", departments: ["胸部外科"], isPrimary: false, note: "胸腺摘出術後フォロー（年1回CT）。" },
+      { id: "c3", name: "金山眼科", address: "愛知県名古屋市", phone: "", departments: ["眼科"], isPrimary: false, note: "眼瞼下垂・複視のフォロー。" },
+      { id: "c4", name: "大須呼吸器内科", address: "愛知県名古屋市", phone: "", departments: ["呼吸器内科"], isPrimary: false, note: "クリーゼ後の呼吸機能フォロー。" },
+    ],
+    visits: [
+      { id: "v1", date: "2026-02-20", clinicId: "c1", department: "脳神経内科", doctor: "名古屋 哲", chiefComplaint: "症状安定", findings: "MG-ADL 2点。ソリリス効果良好。AChR抗体 8.5 IU/mL。", nextAction: "ソリリス継続。次回点滴2週後。", photos: [], relatedMedicationIds: ["m3"], relatedLabResultIds: ["l1"], relatedTimelineEventId: null },
+      { id: "v2", date: "2025-08-20", clinicId: "c1", department: "脳神経内科", doctor: "名古屋 哲", chiefComplaint: "夕方の疲労感", findings: "全身型維持期。プレドニン5mg継続。複視なし。", nextAction: "現治療継続。髄膜炎菌ワクチン更新を予定。", photos: [], relatedMedicationIds: ["m2"], relatedLabResultIds: ["l2"], relatedTimelineEventId: null },
+      { id: "v3", date: "2025-10-10", clinicId: "c2", department: "胸部外科", doctor: "中区 翼", chiefComplaint: "胸腺摘出術後のフォロー", findings: "CT異常なし。再発兆候なし。", nextAction: "次回1年後。", photos: [], relatedMedicationIds: [], relatedLabResultIds: [], relatedTimelineEventId: "ev3" },
+      { id: "v4", date: "2025-11-12", clinicId: "c3", department: "眼科", doctor: "金山 美咲", chiefComplaint: "夕方の眼瞼下垂", findings: "軽度の眼瞼下垂残るが固定。", nextAction: "経過観察。症状増悪時は再診。", photos: [], relatedMedicationIds: [], relatedLabResultIds: [], relatedTimelineEventId: null },
+      { id: "v5", date: "2025-12-01", clinicId: "c4", department: "呼吸器内科", doctor: "大須 樹", chiefComplaint: "呼吸機能評価", findings: "VC・FEV1ともに正常範囲。クリーゼ後の機能温存良好。", nextAction: "次回1年後。風邪・感染時は早めに受診。", photos: [], relatedMedicationIds: [], relatedLabResultIds: [], relatedTimelineEventId: null },
+    ],
   },
 
   fabry: {
@@ -261,6 +365,19 @@ const DEMO_DATA = {
     labResults: [
       { id: "l1", date: "2026-02-15", values: { lysogb3: 4.5, galA: 2.1, egfr: 78, uprot: 0.18, cre: 0.95, bnp: 28, lvef: 62, troponin: 8 } },
       { id: "l2", date: "2025-08-15", values: { lysogb3: 4.8, galA: 2.0, egfr: 80, uprot: 0.20, cre: 0.92, bnp: 32, lvef: 63, troponin: 9 } },
+    ],
+    clinics: [
+      { id: "c1", name: "○○大学病院 ライソゾーム病センター", address: "東京都文京区", phone: "03-3815-5411", departments: ["小児科", "内科"], isPrimary: true, note: "ファブリー病拠点。隔週ERT。遺伝相談も。" },
+      { id: "c2", name: "本郷腎臓内科", address: "東京都文京区", phone: "", departments: ["腎臓内科"], isPrimary: false, note: "腎機能フォロー（蛋白尿・eGFR）。" },
+      { id: "c3", name: "御茶ノ水循環器クリニック", address: "東京都千代田区", phone: "", departments: ["循環器内科"], isPrimary: false, note: "心エコー・心肥大フォロー。" },
+      { id: "c4", name: "湯島ペインクリニック", address: "東京都文京区", phone: "", departments: ["麻酔科"], isPrimary: false, note: "四肢疼痛発作時の対応。" },
+    ],
+    visits: [
+      { id: "v1", date: "2026-02-15", clinicId: "c1", department: "内科", doctor: "本郷 清", chiefComplaint: "ERT継続中", findings: "Lyso-Gb3 4.5、α-Gal 2.1。安定。IRRなし。", nextAction: "ファブラザイム隔週点滴継続。次回ERT 2週後。", photos: [], relatedMedicationIds: ["m1"], relatedLabResultIds: ["l1"], relatedTimelineEventId: null },
+      { id: "v2", date: "2025-08-15", clinicId: "c1", department: "内科", doctor: "本郷 清", chiefComplaint: "疼痛発作 月1〜2回", findings: "発作はテグレトールで概ねコントロール。Lyso-Gb3 4.8。", nextAction: "現薬継続。発作増えたら相談。", photos: [], relatedMedicationIds: ["m2"], relatedLabResultIds: ["l2"], relatedTimelineEventId: null },
+      { id: "v3", date: "2023-05-15", clinicId: "c2", department: "腎臓内科", doctor: "本郷 翔", chiefComplaint: "腎生検フォロー", findings: "GL-3軽度蓄積。eGFR安定。尿蛋白 0.18 g/gCr。", nextAction: "ARB継続。半年後再評価。", photos: [], relatedMedicationIds: ["m3"], relatedLabResultIds: [], relatedTimelineEventId: "ev6" },
+      { id: "v4", date: "2025-11-22", clinicId: "c3", department: "循環器内科", doctor: "御茶 律", chiefComplaint: "動悸が時々", findings: "心エコー LVEF 62%、左室肥大なし。BNP 28。", nextAction: "次回1年後。動悸増えたら24時間心電図検討。", photos: [], relatedMedicationIds: [], relatedLabResultIds: [], relatedTimelineEventId: null },
+      { id: "v5", date: "2025-09-30", clinicId: "c4", department: "麻酔科", doctor: "湯島 涼", chiefComplaint: "夏場の疼痛発作対策", findings: "発作時の対処法を再確認。発汗低下に注意。", nextAction: "テグレトール頓用追加可。半年後フォロー。", photos: [], relatedMedicationIds: [], relatedLabResultIds: [], relatedTimelineEventId: null },
     ],
   },
 
@@ -385,6 +502,19 @@ const DEMO_DATA = {
       { id: "l1", date: "2026-03-05", values: { bnp: 85, ntprobnp: 280, egfr: 72, cre: 0.95, ast: 22, alt: 25, ua: 6.8, na: 138, k: 4.2, hb: 13.5, plt: 22 } },
       { id: "l2", date: "2025-12-05", values: { bnp: 92, ntprobnp: 310, egfr: 70, cre: 0.98, ast: 24, alt: 28, ua: 7.1, na: 137, k: 4.0, hb: 13.2, plt: 23 } },
       { id: "l3", date: "2025-09-05", values: { bnp: 78, ntprobnp: 265, egfr: 74, cre: 0.92, ast: 20, alt: 22, ua: 6.5, na: 139, k: 4.3, hb: 13.8, plt: 24 } },
+    ],
+    clinics: [
+      { id: "c1", name: "○○PAHセンター 循環器内科", address: "福岡県福岡市", phone: "092-111-2222", departments: ["循環器内科"], isPrimary: true, note: "PAH診療拠点。3ヶ月毎にBNP・心エコー。" },
+      { id: "c2", name: "博多呼吸器クリニック", address: "福岡県福岡市", phone: "", departments: ["呼吸器内科"], isPrimary: false, note: "肺機能・在宅酸素のフォロー。" },
+      { id: "c3", name: "天神膠原病内科", address: "福岡県福岡市", phone: "", departments: ["膠原病内科"], isPrimary: false, note: "膠原病合併（CTD-PAH 関連）スクリーニング。" },
+      { id: "c4", name: "中央婦人クリニック", address: "福岡県福岡市", phone: "", departments: ["産婦人科"], isPrimary: false, note: "妊娠厳禁の確認・避妊指導。" },
+    ],
+    visits: [
+      { id: "v1", date: "2026-03-05", clinicId: "c1", department: "循環器内科", doctor: "博多 玲", chiefComplaint: "息切れ軽度", findings: "WHO FC II維持。BNP 85、6MWD 480m。3剤併用で安定。", nextAction: "現薬継続。次回3ヶ月後。", photos: [], relatedMedicationIds: ["m1", "m2", "m3"], relatedLabResultIds: ["l1"], relatedTimelineEventId: null },
+      { id: "v2", date: "2025-12-05", clinicId: "c1", department: "循環器内科", doctor: "博多 玲", chiefComplaint: "浮腫が少し", findings: "下腿浮腫軽度。利尿剤調整。BNP 92。", nextAction: "ラシックス20mg→40mg。塩分制限を再確認。", photos: [], relatedMedicationIds: ["m4"], relatedLabResultIds: ["l2"], relatedTimelineEventId: null },
+      { id: "v3", date: "2025-09-10", clinicId: "c1", department: "循環器内科", doctor: "博多 玲", chiefComplaint: "右心カテーテル検査", findings: "mPAP 32mmHg、PVR 4.2 WU。改善維持。", nextAction: "現治療継続。次回6ヶ月後にRHC再評価。", photos: [], relatedMedicationIds: [], relatedLabResultIds: ["l3"], relatedTimelineEventId: "ev7" },
+      { id: "v4", date: "2025-10-20", clinicId: "c2", department: "呼吸器内科", doctor: "博多 隼", chiefComplaint: "肺機能評価", findings: "肺拡散能やや低下。SpO2安静92%。", nextAction: "在宅酸素は不要。労作時のSpO2モニタ継続。", photos: [], relatedMedicationIds: [], relatedLabResultIds: [], relatedTimelineEventId: null },
+      { id: "v5", date: "2025-11-15", clinicId: "c3", department: "膠原病内科", doctor: "天神 凛", chiefComplaint: "膠原病合併スクリーニング", findings: "強皮症・SLE所見なし。抗核抗体陰性。", nextAction: "1年後再スクリーニング。", photos: [], relatedMedicationIds: [], relatedLabResultIds: [], relatedTimelineEventId: null },
     ],
   },
 };
